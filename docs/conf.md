@@ -1,9 +1,9 @@
 # The syntax of Conf in Backus-Naur form
 
-## Lexical definition
+## Conf v2.0 syntax definition
 
 ```EBNF
-(* The syntax of Conf in Backus-Naur Form. *)
+(* The syntax of Conf v2.0 in Backus-Naur Form. *)
 
 program ::= (class_def | func_def | assign_stmt)+
 
@@ -260,7 +260,7 @@ default_stmt ::= 'default' block
 
 ```
 
-## Conf example
+## Conf v2.0 example
 
 ```python
 # example for DNS parser
@@ -299,5 +299,47 @@ func main(analyzer, upstrm, downstrm, output) {
     }
   }
 }
+
+```
+
+## Conf v1.0 syntax definition
+
+```EBNF
+(* The syntax of Conf v1.0 in Backus-Naur Form. *)
+
+program ::= domain assign_stmt+
+
+domain ::= '[' domain_name ']'
+domain_name ::= ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '-')+
+
+assign_stmt ::= key_stmt '=' value_stmt
+
+key_stmt ::= n_key | s_key
+n_key ::= ('a'..'z' | 'A'..'Z' | '0'..'9' | '_')+
+s_key ::= s_key_type '(' s_key_args ')'
+s_key_type ::= 'T_' | 'N_' | 'M_'
+s_key_args ::= ('0'..'9')+ | ('A'..'Z')+
+
+value_stmt ::= id ('|' action)+
+id ::= ('A'..'Z')+
+action ::= id [action_args]
+action_args ::= '(' args_list ')'
+args_list ::= ('!'..'~')*
+```
+
+## Conf v1.0 example
+
+```ini
+# example
+
+[2f87144a9ee6678ccf44245fd0923c28]
+
+RUN_VERSION=0.0.0
+
+HOST=www.baidu.com
+URL=/index
+N_(XXX1)=NONE|STRING(9999)
+T_(0)=NONE|STRING(999)
+N_(DOMAIN)=HOST|DEFAULT
 
 ```
