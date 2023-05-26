@@ -1,4 +1,4 @@
-// Copyright 2022 The Oak Authors.
+// Copyright 2023 The Oak Authors.
 
 #ifndef PEPPA_CODEC_H_
 #define PEPPA_CODEC_H_

@@ -1,4 +1,4 @@
-/* Copyright 2022 The Peppa Authors. */
+/* Copyright 2023 The Peppa Authors. */
 
 #ifndef PEPPA_COMPILER_H_
 #define PEPPA_COMPILER_H_

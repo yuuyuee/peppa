@@ -1,4 +1,4 @@
-// Copyright 2022 The Peppa Authors.
+// Copyright 2023 The Peppa Authors.
 
 #ifndef PEPPA_ERROR_H_
 #define PEPPA_ERROR_H_
