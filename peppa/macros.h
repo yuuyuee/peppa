@@ -1,9 +1,9 @@
-// Copyright 2023 The Peppa Authors.
+/* Copyright 2023 The Peppa Authors. */
 
 #ifndef PEPPA_MACROS_H_
 #define PEPPA_MACROS_H_
 
-#include <stddef.h>  // size_t
+#include <stddef.h>
 
 #if defined(__cplusplus)
 # define PP_ARRAYSIZE(a) (sizeof(peppa::macros_internal::ArraySizeHelper(a)))
@@ -38,27 +38,28 @@ R ArraySizeHelper(const T (&)[N]);
 #define PPALIGIN(n, a) (((n) + (a) - 1) & ~((a) - 1))
 #define PPCOMPARE(a, b) (((a) > (b)) - ((a) < (b)))
 
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-# define PP_HAS_BE 1
-#else
-# define PP_HAS_LE 1
-#endif
-
-// PP_HAS_ATTRIBUTE()
+/* PP_HAS_ATTRIBUTE() */
 #if defined(__has_attribute)
 # define PP_HAS_ATTRIBUTE(x) __has_attribute(x)
 #else
 # define PP_HAS_ATTRIBUTE(x) (0)
 #endif
 
-// PP_HAS_CPP_ATTRIBUTE()
+/* PP_HAS_CPP_ATTRIBUTE() */
 #if defined(__has_cpp_attribute)
 # define PP_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
 #else
 # define PP_HAS_CPP_ATTRIBUTE(x) (0)
 #endif
 
-// PP_ATTR_ALWAYS_INLINE()
+/* PP_HAS_BUILTIN() */
+#if defined(__has_builtin)
+# define PP_HAS_BUILTIN(x) __has_builtin(x)
+#else
+# define PP_HAS_BUILTIN(x) 0
+#endif
+
+/* PP_ATTR_ALWAYS_INLINE() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_ATTRIBUTE(always_inline)
 # define PP_ATTR_ALWAYS_INLINE inline __attribute__((always_inline))
@@ -66,7 +67,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_ALWAYS_INLINE
 #endif
 
-// PP_ATTR_NORETURN()
+/* PP_ATTR_NORETURN() */
 #if defined(__cplusplus) && __cplusplus >= 201103L
 # define PP_ATTR_NORETURN [[noreturn]]
 #elif (defined(__GNUC__) && !defined(__clang__)) || \
@@ -76,7 +77,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_NORETURN
 #endif
 
-// PP_ATTR_DEPRECATED()
+/* PP_ATTR_DEPRECATED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_ATTRIBUTE(deprecated)
 # define PP_ATTR_DEPRECATED(...) __attribute__((deprecated(__VA_ARGS__)))
@@ -84,7 +85,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_DEPRECATED(...)
 #endif
 
-// PP_ATTR_MAYBE_UNUSED()
+/* PP_ATTR_MAYBE_UNUSED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_ATTRIBUTE(unused)
 # define PP_ATTR_MAYBE_UNUSED __attribute__((unused))
@@ -92,7 +93,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_MAYBE_UNUSED
 #endif
 
-// PP_ATTR_NODISCARD()
+/* PP_ATTR_NODISCARD() */
 #if defined(__cplusplus) && __cplusplus >= 201103L
 # define PP_ATTR_NODISCARD [[nodiscard]]
 #elif (defined(__GNUC__) && !defined(__clang__)) || \
@@ -102,7 +103,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_NODISCARD
 #endif
 
-// PP_ATTR_ALIGNED()
+/* PP_ATTR_ALIGNED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_ATTRIBUTE(aligned)
 # define PP_ATTR_ALIGNED(n) __attribute__((aligned(n)))
@@ -110,7 +111,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_ALIGNED(n)
 #endif
 
-// PP_ATTR_PACKED()
+/* PP_ATTR_PACKED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_ATTRIBUTE(packed)
 # define PP_ATTR_PACKED __attribute__((packed))
@@ -118,7 +119,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_PACKED
 #endif
 
-// PP_ATTR_PRINTF()
+/* PP_ATTR_PRINTF() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_ATTRIBUTE(__format__)
 # define PP_ATTR_PRINTF(index, first) \
@@ -127,14 +128,7 @@ R ArraySizeHelper(const T (&)[N]);
 # define PP_ATTR_PRINTF(index, first)
 #endif
 
-// PP_HAS_BUILTIN()
-#if defined(__has_builtin)
-# define PP_HAS_BUILTIN(x) __has_builtin(x)
-#else
-# define PP_HAS_BUILTIN(x) 0
-#endif
-
-// PP_LIKELY(), PP_UNLIKELY()
+/* PP_LIKELY(), PP_UNLIKELY() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_BUILTIN(__builtin_expect)
 # define PP_LIKELY(x) __builtin_expect(false || (x), true)
@@ -179,4 +173,4 @@ constexpr int IgnoreUnused() { return 0; }
 
 #endif
 
-#endif  // PEPPA_MACROS_H_
+#endif  /* PEPPA_MACROS_H_ */

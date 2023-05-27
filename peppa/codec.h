@@ -1,4 +1,4 @@
-// Copyright 2023 The Oak Authors.
+/* Copyright 2023 The Peppa Authors. */
 
 #ifndef PEPPA_CODEC_H_
 #define PEPPA_CODEC_H_
@@ -107,4 +107,4 @@ static inline void* SetVarint32(void* buffer, uint32_t value) {
   }
 }
 
-#endif  // PEPPA_CODEC_H_
+#endif  /* PEPPA_CODEC_H_ */

@@ -1,10 +1,9 @@
-// Copyright 2023 The Peppa Authors.
+/* Copyright 2023 The Peppa Authors. */
 
 #include <stdio.h>
 
 #include "peppa/format.h"
 
-// This is an simple wrapper for snprintf and vsnprintf.
 size_t pp_format(char* buf, size_t size, const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);

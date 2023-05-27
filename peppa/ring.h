@@ -1,4 +1,4 @@
-// Copyright 2023 The Peppa Authors.
+/* Copyright 2023 The Peppa Authors. */
 
 #ifndef PEPPA_RING_H_
 #define PEPPA_RING_H_
@@ -8,10 +8,10 @@
 typedef void* Ring[2];
 
 #define PP_RING_DATA(ptr, type, field)                \
-  ((type *) (((void *) (ptr)) - offsetof(type, field)))   // NOLINT
+  ((type *) (((void *) (ptr)) - offsetof(type, field)))
 
-#define PP_RING_NEXT(n) (*(Ring**) &((*(n))[0]))   // NOLINT
-#define PP_RING_PREV(n) (*(Ring**) &((*(n))[1]))   // NOLINT
+#define PP_RING_NEXT(n) (*(Ring**) &((*(n))[0]))
+#define PP_RING_PREV(n) (*(Ring**) &((*(n))[1]))
 
 #define PP_RING_HEAD(n) (PP_RING_NEXT(n))
 
@@ -73,4 +73,4 @@ typedef void* Ring[2];
   }                                                   \
 } while (0)
 
-#endif  // PEPPA_RING_H_
+#endif  /* PEPPA_RING_H_ */
