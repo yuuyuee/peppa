@@ -2,15 +2,17 @@
 
 #include "peppa/error.h"
 
-#undef _GNU_SOURCE
+/* XSI-compliant version of strerror_r */
+#ifdef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+
 #ifndef _XOPEN_SOURCE
-# define _XOPEN_SOURCE 600 /* XSI-compliant version of strerror_r */
+# define _XOPEN_SOURCE 600
 #endif
 
 #include <string.h>
 #include <stdio.h>
-
-#include "peppa/macros.h"
 
 struct pp_error_entry {
   int num;
