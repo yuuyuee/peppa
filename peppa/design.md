@@ -18,8 +18,10 @@
     * ternary equation
     * indirect ternary equation
     * quaternion equation
+* Optimization design
 
-## Peppa Virtual Machine
+## Peppa Virtual Machine (PVM)
 
 * built-in function or standard library function
 * State
+* JIT
