@@ -1,0 +1,11 @@
+ public before
+import priv # this is an comments
+public            after \
+        back_slash _identify_1 _0 _1 _2 \
+    _3 _4
+"abcd" \
+"abc12\t+\\+\x34"
+
+# this is an comments
+import priv2 #
+end of public

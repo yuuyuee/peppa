@@ -42,54 +42,54 @@ Operators                   | Type of operation         | Associativity
 {key: value...}             | dictionary                |
 {exprs}                     | set                       |
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-x[index]                    | subscription              | left to right
-x[index:index]              | slicing                   | left to right
-x(arguments...)             | function call             | left to right
-x.attribute                 | attribute reference       | left to right
+x[index]                    | subscription              | left
+x[index:index]              | slicing                   | left
+x(arguments...)             | function call             | left
+x.attribute                 | attribute reference       | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-**                          | exponentiation            | left to right
+**                          | exponentiation            | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+x                          | positive                  | left to right
--x                          | negative                  | left to right
-~x                          | bitwise NOT               | left to right
++x                          | positive                  | left
+-x                          | negative                  | left
+~x                          | bitwise NOT               | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-*                           | multiplication            | left to right
-/                           | division                  | left to right
-//                          | floor division            | left to right
-%                           | remainder                 | left to right
+*                           | multiplication            | left
+/                           | division                  | left
+//                          | floor division            | left
+%                           | remainder                 | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+                           | addition                  | left to right
--                           | substraction              | left to right
++                           | addition                  | left
+-                           | substraction              | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-<<                          | left shift                | left to right
->>                          | right shift               | left to right
+<<                          | left shift                | left
+>>                          | right shift               | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-&                           | bitwise AND               | left to right
+&                           | bitwise AND               | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-^                           | bitwise XOR               | left to right
+^                           | bitwise XOR               | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-|                           | bitwise OR                | left to right
+|                           | bitwise OR                | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-in                          | including membership      | left to right
-not in                      | not including membership  | left to right
-is                          | identity                  | left to right
-is not                      | not identity              | left to right
-<                           | less than                 | left to right
-<=                          | less or equal than        | left to right
->                           | greater than              | left to right
->=                          | greater or equal than     | left to right
-==                          | equal                     | left to right
-!=                          | not equal                 | left to right
+in                          | including membership      | left
+not in                      | not including membership  | left
+is                          | identity                  | left
+is not                      | not identity              | left
+<                           | less than                 | left
+<=                          | less or equal than        | left
+>                           | greater than              | left
+>=                          | greater or equal than     | left
+==                          | equal                     | left
+!=                          | not equal                 | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-not                         | boolean NOT               | left to right
+not                         | boolean NOT               | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-and                         | boolean AND               | left to right
+and                         | boolean AND               | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-or                          | boolean OR                | left to right
+or                          | boolean OR                | left
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 if - else                   | conditional expression    |
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-=                           | assignment expression     |
+=                           | assignment expression     | right
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Note:
   all comparison operators have the same priority, which is lower
