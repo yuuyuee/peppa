@@ -1,7 +1,7 @@
 /* Copyright 2023 The Peppa Authors. */
 
-#ifndef PEPPA_COMPILER_H_
-#define PEPPA_COMPILER_H_
+#ifndef PEPPA_INTERNAL_COMPILER_H_
+#define PEPPA_INTERNAL_COMPILER_H_
 
 /* Platform feature checks */
 #if !defined(__linux__) && !defined(linux) && !defined(__linux)
@@ -61,4 +61,4 @@
 # error "Endian detection is failed."
 #endif
 
-#endif  /* PEPPA_COMPILER_H_ */
+#endif  /* PEPPA_INTERNAL_COMPILER_H_ */

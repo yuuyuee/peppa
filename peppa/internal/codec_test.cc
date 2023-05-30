@@ -1,6 +1,6 @@
 // Copyright 2023 The Peppa Authors.
 
-#include "peppa/codec.h"
+#include "peppa/internal/codec.h"
 #include "gtest/gtest.h"
 
 namespace {

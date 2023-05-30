@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "peppa/format.h"
+#include "peppa/internal/format.h"
 
 size_t pp_format(char* buf, size_t size, const char* fmt, ...) {
   va_list ap;

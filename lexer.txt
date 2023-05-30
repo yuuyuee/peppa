@@ -1,11 +1,47 @@
- public before
-import priv # this is an comments
-public            after \
-        back_slash _identify_1 _0 _1 _2 \
-    _3 _4
-"abcd" \
-"abc12\t+\\+\x34"
+@attribute("protocol")
+PROTOCOL = 998
 
-# this is an comments
-import priv2 #
-end of public
+@attribute("assember")
+ASSEMBER = None
+
+@attribte("analyzer")
+func main(analyzer, upstrm, downstrm, output) {
+  hdr = struct.add_fmt(">HHHHHH", \
+        {1: "flags", 2: "que_cnt", 3: "ans_cnt"} \ # xxxxx
+        ).unpack(buf)
+  if header.flags >> 15 == 1 {
+    hosts = []
+    for i in range(0, hdr.que_cnt) {
+      que = struct.add_fmt(">sHH", {0: "host"}).unpack(buf);
+      hosts.add(que.host);
+    }
+
+    ips = []
+    for i in range(0, hdr.ans_cnt) {
+      ans = struct.add_fmt(">HHHIH", {4: "len"}).unpack(buf)
+      ip = struct.add_fmt("{}s".format(ans.len), {0: "ip"}).unpack(buf);
+      ips.add(ip)
+    }
+
+    if not hosts.empty() and not ips.empty() {
+      output.action_type = "0000";
+      output.entity_type = "0000";
+      output.conf_id = "0000000000000000";
+      output.app_type = "0000000";
+      output.proto_type = "000000000";
+      output.domain = ",".join(hosts)
+      output.ips = ",".join(ips);
+    }
+  }
+}
+
+_a = "hello world"
+_b = 128
+_c = 0x80
+_d = 0200
+_e = 0b10000000
+_f = 128.0
+_h = "abc
+  def\x41\x42\102\ttab"
+_g = 128.0E-128
+0_

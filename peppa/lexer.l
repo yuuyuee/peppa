@@ -2,140 +2,240 @@
 
 %{
 
-#include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
 #include <string.h>
+#include <ctype.h>
 
 #define YY_USER_INIT
 #define YY_USER_ACTION do { yycolumn += yyleng; } while (0);
 
 #define PP_BYPASS_UNTIL(c) while (input(yyscanner) != c) {}
+#define PP_HEX2INT(c) (isdigit(c) ? (c) - '0' : ((c) - 'A') + 10)
+
 %}
 
-/* option definition from */
 %option noyywrap nodefault nomain noreject nostdinit nounput
-%option yylineno reentrant
-%option debug
-%option stack
+%option reentrant stack yylineno
 /* %option bison-bridge bison-locations */
-%option perf-report
 %option prefix="pp"
 
-%x STRING_LITERAL
+%x SINGLE_QUOTE_STR DOUBLE_QUOTE_STR
 
 %%
 
 %{
-  /* before while() on the yylex() */
-  char buffer[1024];
-  int len = 0;
+char buffer[1024];
+int len = 0;
 %}
 
-"("       |
-")"       |
-"["       |
-"]"       |
-"{"       |
-"}"       |
-"."       |
-":"       |
-";"       |
-"~"       |
-"**"      |
-"*"       |
-"/"       |
-"//"      |
-"%"       |
-"+"       |
-"-"       |
-"<<"      |
-">>"      |
-"&"       |
-"^"       |
-"|"       |
-"in"      |
-"not in"  |
-"is"      |
-"is not"  |
-"<"       |
-"<="      |
-">"       |
-">="      |
-"=="      |
-"!="      |
-"not"     |
-"and"     |
-"or"      |
-"if"      |
-"else"    |
-"for"     |
-"match"   |
-"case"    |
-"class"   |
-"True"    |
-"False"   |
-"None"    { /* Operators */
-  printf("Keyword or Operator: %*s\n", yyleng, yytext);
+<INITIAL>{
+  "@"       |
+  "="       |
+  ","       |
+  "("       |
+  ")"       |
+  "["       |
+  "]"       |
+  "{"       |
+  "}"       |
+  "."       |
+  ":"       |
+  ";"       |
+  "~"       |
+  "**"      |
+  "*"       |
+  "/"       |
+  "//"      |
+  "%"       |
+  "+"       |
+  "-"       |
+  "<<"      |
+  ">>"      |
+  "&"       |
+  "^"       |
+  "|"       |
+  "in"      |
+  "not in"  |
+  "is"      |
+  "is not"  |
+  "<"       |
+  "<="      |
+  ">"       |
+  ">="      |
+  "=="      |
+  "!="      |
+  "not"     |
+  "and"     |
+  "or"      |
+  "if"      |
+  "else"    |
+  "for"     |
+  "match"   |
+  "case"    |
+  "class"   |
+  "True"    |
+  "False"   |
+  "None"    {
+    /* Operators */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Keyword or Operator: %s\n", yytext);
+  }
+
+  [a-zA-Z_][a-zA-Z0-9_]*  {
+    /* Identifier */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Identifier: %s\n", yytext);
+  }
+
+  \'    {
+    /* Single-quoted string literal */
+    len = 0;
+    yy_push_state(SINGLE_QUOTE_STR, yyscanner);
+  }
+
+  \"    { /* Double-quoted string literal */
+    len = 0;
+    yy_push_state(DOUBLE_QUOTE_STR, yyscanner);
+  }
+
+  0[bB][01]+    {
+    /* Binary integer literal */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("binary integer literal: %s\n", yytext);
+  }
+
+  0[0-7]+   {
+    /* Octal integer literal */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Octal integer literal: %s\n", yytext);
+  }
+
+  0[xX][0-9a-fA-F]+   {
+    /* Hexadecimal integer literal */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Hexadecimal integer literal: %s\n", yytext);
+  }
+
+  [-+]?[0-9]+   {
+    /* Decimal integer literal */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Decimal integer literal: %s\n", yytext);
+  }
+
+  [-+]?[0-9]+("."[0-9]+)?                     |
+  [-+]?[0-9]+("."[0-9]+)?([eE][+-]?[0-9]+)?   {
+    /* Float integer literal */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Float literal: %s\n", yytext);
+  }
+
+  "#".*$    {
+    /* Comments */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Comments: %s\n", yytext);
+  }
+
+  [ \t]*  ; /* Whitespace */
+
+  \\[ \t]*(#.*)?\n   {
+    /* Back-slash */
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Back-slash: %s\n", yytext);
+  }
+
+  \n    { /* Newline */ }
+
+  <<EOF>> {
+    /* End of file */
+    yyterminate();
+  }
 }
 
-[a-zA-Z_][a-zA-Z0-9_]*  { /* Identifier */
-  printf("Identifier: %*s\n", yyleng, yytext);
-}
-
-\"        { /* String literal */
-  len = 0;
-  yy_push_state(STRING_LITERAL, yyscanner);
-}
-
-<STRING_LITERAL>{
-  \"            {
-    printf("String literal: %*s [%d]\n", len, buffer, len);
+<SINGLE_QUOTE_STR>{
+  \'    {
+    buffer[len] = '\0';
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("String literal: \'%s\' [%d]\n", buffer, len);
     yy_pop_state(yyscanner);
   }
 
-  \n            {
-    printf("Unterminated string literal in line %d:%d\n", yylineno, yycolumn + 1);
+  [^\\']+    {
+    memcpy(buffer + len, yytext, yyleng);
+    len += yyleng;
+  }
+}
+
+<DOUBLE_QUOTE_STR>{
+  \"    {
+    buffer[len] = '\0';
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("String literal: \'%s\' [%d]\n", buffer, len);
+    yy_pop_state(yyscanner);
+  }
+
+  [^\\"]+    {
+    memcpy(buffer + len, yytext, yyleng);
+    len += yyleng;
+  }
+}
+
+<SINGLE_QUOTE_STR,DOUBLE_QUOTE_STR>{
+  \\(x|X)[0-9a-fA-F]{1,2}   {
+    int value = 0;
+    for (int i = 2; i < yyleng; ++i) {
+      value <<= 4;
+      value += PP_HEX2INT(toupper(yytext[i]));
+    }
+    buffer[len++] = value & 0xFF;
+  }
+
+  \\[0-7]{1,3}    {
+    int value = 0;
+    for (int i = 1; i < yyleng; ++i) {
+      value <<= 3;
+      value += yytext[i] - '0';
+    }
+    buffer[len++] = value & 0xFF;
+  }
+
+  \\.   {
+    switch (yytext[1]) {
+      case '\'':
+      case '\"': {
+        if ((YY_START == SINGLE_QUOTE_STR && yytext[1] == '\'') ||
+            (YY_START == DOUBLE_QUOTE_STR && yytext[1] == '\"')) {
+          buffer[len++] = yytext[1];
+        } else {
+          memcpy(buffer + len, yytext, yyleng);
+          len += yyleng;
+        }
+      }
+      break;
+      case 'b': buffer[len++] = '\b'; break;
+      case 't': buffer[len++] = '\t'; break;
+      case 'n': buffer[len++] = '\n'; break;
+      case 'v': buffer[len++] = '\v'; break;
+      case 'f': buffer[len++] = '\f'; break;
+      case 'r': buffer[len++] = '\r'; break;
+      default: {
+        memcpy(buffer + len, yytext, yyleng);
+        len += yyleng;
+      }
+    }
+  }
+
+  <<EOF>>   {
+    printf("[%d: %d] ", yylineno, yycolumn);
+    printf("Unterminated string literal in line %d:%d\n",
+            yylineno, yycolumn);
     yyterminate();
   }
-
-  \\a           { buffer[len++] = '\a'; }
-  \\n           { buffer[len++] = '\n'; }
-  \\r           { buffer[len++] = '\r'; }
-  \\t           { buffer[len++] = '\t'; }
-  \\v           { buffer[len++] = '\v'; }
-  \\b           { buffer[len++] = '\b'; }
-  \\f           { buffer[len++] = '\f'; }
-  \\\\          { buffer[len++] = '\\'; }
-
-  \\(.|\n)      {
-    memcpy(buffer + len, yytext, yyleng);
-    len += yyleng;
-  }
-
-  [^\\\n\"]+    {
-    memcpy(buffer + len, yytext, yyleng);
-    len += yyleng;
-  }
 }
 
-"#".*     ; /* Comments */
-
-[ \t]*    ; /* Whitespace */
-
-\\\n      |
-\\#.*\n   { /* Back-slash */ }
-
-^\n       |
-\n        ; /* Newline */
-
-.         { /* Illegal character */
-  printf("Unknown charaters \"%*s\"\n", yyleng, yytext);
-  yyterminate();
-}
-
-<<EOF>>   { /* End of file */
+<*>.   {
+  /* Illegal character */
+  printf("[%d: %d] ", yylineno, yycolumn);
+  printf("Unknown charaters \"%s\"\n", yytext);
   yyterminate();
 }
 
