@@ -1,7 +1,7 @@
 /* Copyright 2023 The Peppa Authors. */
 
-#ifndef PEPPA_INTERNAL_MACROS_H_
-#define PEPPA_INTERNAL_MACROS_H_
+#ifndef PEPPA_MACROS_H_
+#define PEPPA_MACROS_H_
 
 #include <stddef.h>
 
@@ -173,4 +173,4 @@ constexpr int IgnoreUnused() { return 0; }
 
 #endif
 
-#endif  /* PEPPA_INTERNAL_MACROS_H_ */
+#endif  /* PEPPA_MACROS_H_ */

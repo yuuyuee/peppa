@@ -1,7 +1,7 @@
 /* Copyright 2023 The Peppa Authors. */
 
-#ifndef PEPPA_INTERNAL_RING_H_
-#define PEPPA_INTERNAL_RING_H_
+#ifndef PEPPA_RING_H_
+#define PEPPA_RING_H_
 
 #include <stddef.h>
 
@@ -73,4 +73,4 @@ typedef void* Ring[2];
   }                                                   \
 } while (0)
 
-#endif  /* PEPPA_INTERNAL_RING_H_ */
+#endif  /* PEPPA_RING_H_ */

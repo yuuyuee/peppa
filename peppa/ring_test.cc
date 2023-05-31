@@ -1,7 +1,7 @@
 // Copyright 2023 The Peppa Authors.
 
 #include <vector>
-#include "peppa/internal/ring.h"
+#include "peppa/ring.h"
 #include "gtest/gtest.h"
 
 namespace {

@@ -6,6 +6,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "peppa/parser.h"
+
 #define YY_USER_INIT
 #define YY_USER_ACTION do { yycolumn += yyleng; } while (0);
 
@@ -14,9 +16,10 @@
 
 %}
 
-%option noyywrap nodefault nomain noreject nostdinit nounput
-%option reentrant stack yylineno
-/* %option bison-bridge bison-locations */
+%option noyywrap nodefault nomain noreject nostdinit
+%option noinput nounput
+%option reentrant yylineno
+%option bison-bridge bison-locations
 %option prefix="pp"
 
 %x SINGLE_QUOTE_STR DOUBLE_QUOTE_STR
@@ -90,12 +93,12 @@ int len = 0;
   \'    {
     /* Single-quoted string literal */
     len = 0;
-    yy_push_state(SINGLE_QUOTE_STR, yyscanner);
+    BEGIN SINGLE_QUOTE_STR;
   }
 
   \"    { /* Double-quoted string literal */
     len = 0;
-    yy_push_state(DOUBLE_QUOTE_STR, yyscanner);
+    BEGIN DOUBLE_QUOTE_STR;
   }
 
   0[bB][01]+    {
@@ -156,7 +159,7 @@ int len = 0;
     buffer[len] = '\0';
     printf("[%d: %d] ", yylineno, yycolumn);
     printf("String literal: \'%s\' [%d]\n", buffer, len);
-    yy_pop_state(yyscanner);
+    BEGIN INITIAL;
   }
 
   [^\\']+    {
@@ -170,7 +173,7 @@ int len = 0;
     buffer[len] = '\0';
     printf("[%d: %d] ", yylineno, yycolumn);
     printf("String literal: \'%s\' [%d]\n", buffer, len);
-    yy_pop_state(yyscanner);
+    BEGIN INITIAL;
   }
 
   [^\\"]+    {
@@ -240,27 +243,3 @@ int len = 0;
 }
 
 %%
-
-int main(int argc, char* argv[]) {
-  if (argc != 2) {
-      printf("Usage: %s file\n", argv[0]);
-      exit(EXIT_FAILURE);
-  }
-
-  const char* fname = argv[1];
-  FILE* fp = fopen(fname, "r");
-  if (!fp) {
-    printf("open file failed: %s\n", fname);
-    exit(EXIT_FAILURE);
-  }
-
-  yyscan_t scanner;
-  yylex_init_extra(0, &scanner);
-  yyset_debug(1, scanner);
-  yyset_in(fp, scanner);
-  while (yylex(scanner) != 0) {}
-  yylex_destroy(scanner);
-  fclose(fp);
-
-  return 0;
-}

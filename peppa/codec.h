@@ -1,7 +1,7 @@
 /* Copyright 2023 The Peppa Authors. */
 
-#ifndef PEPPA_INTERNAL_CODEC_H_
-#define PEPPA_INTERNAL_CODEC_H_
+#ifndef PEPPA_CODEC_H_
+#define PEPPA_CODEC_H_
 
 #include <stdint.h>
 #include <stddef.h>
@@ -107,4 +107,4 @@ static inline void* SetVarint32(void* buffer, uint32_t value) {
   }
 }
 
-#endif  /* PEPPA_INTERNAL_CODEC_H_ */
+#endif  /* PEPPA_CODEC_H_ */

@@ -1,7 +1,7 @@
 /* Copyright 2023 The Peppa Authors. */
 
-#ifndef PEPPA_INTERNAL_FORMAT_H_
-#define PEPPA_INTERNAL_FORMAT_H_
+#ifndef PEPPA_FORMAT_H_
+#define PEPPA_FORMAT_H_
 
 #include <stdarg.h>
 
@@ -13,4 +13,4 @@ size_t pp_format(char* buf, size_t size, const char* fmt, ...)
 
 size_t pp_vformat(char* buf, size_t size, const char* fmt, va_list ap);
 
-#endif  /* PEPPA_INTERNAL_FORMAT_H_ */
+#endif  /* PEPPA_FORMAT_H_ */
