@@ -5,18 +5,11 @@
 
 /* Syntax parsing API */
 
-#define PP_NAME_MAX 128
-typedef struct pp_symbol {
-  char name[PP_NAME_MAX];
-  struct pp_symbol* next;
-} pp_symbol_t;
-
-typedef struct pp_state {
-  pp_symbol_t sym;
-} pp_state_t;
+struct pp_parser;
+typedef struct pp_parser pp_parser_t;
 
 
-int pp_parse(const char* fname);
+int pp_parse(pp_parser_t* parser, const char* fname);
 
 
 /* Virtual machine API */
