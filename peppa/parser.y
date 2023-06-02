@@ -6,9 +6,11 @@
 /* Emitted on top of the implementation file. */
 
 #include <stdio.h>
+#include <math.h>
 
 #include "peppa/lexer.h"
 #include "peppa/peppa.h"
+
 }
 
 %code requires {
@@ -32,27 +34,51 @@ void pperror(YYLTYPE* loc, void*, const char* s);
 %lex-param {void* args}
 
 %union {
-  double f_val;
-  uint64_t i_val;
-  char* s_val;
-  pp_symbol_t* id;
+  double number;
+  int var;
+  int fun;
+  double exp;
 }
 
-%token <f_val> FLT
-%token <i_val> INT
-%token <s_val> STR
-%token <id> ID
+%token <number> NUM
+%token <var> VAR
+%token <fun> FUN
+%nterm <exp> exp
 
+%destructor {$$ = 0; /* destruct f_val */ } <NUM>
 
+%precedence '='
 %left '+' '-'
 %left '*' '/'
+%precedence NEG
+%right '^'
 
-%start program
+%start input
 
 %%
 
-program
+input
   : /* empty */
+  | input line
+  ;
+
+line
+  : '\n'
+  | exp '\n'    { printf("%f\n", $1); }
+  | error '\n'  {yyerrok;}
+  ;
+
+exp
+  : NUM           { $$ = $1; }
+  | VAR '=' exp   { $$ = $3; $1 = $3; }
+  | FUN '(' exp ')'   { $$ = $1->value.fun($3); }
+  | exp '+' exp       { $$ = $1 + $3; }
+  | exp '-' exp       { $$ = $1 - $3; }
+  | exp '*' exp       { $$ = $1 * $3; }
+  | exp '/' exp       { $$ = $1 / $3; }
+  | '-' exp %prec NEG   { $$ = -$2; }
+  | exp '^' exp       { $$ = pow($1, $3); }
+  | '(' exp ')'       {$$ = $2; }
   ;
 
 %%
