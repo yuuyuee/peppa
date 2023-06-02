@@ -40,6 +40,14 @@ void pperror(YYLTYPE* loc, void*, const char* s);
   double exp;
 }
 
+%code requires {
+  /* code requires 2 */
+}
+
+%code {
+  /* unqualified code */
+}
+
 %token <number> NUM
 %token <var> VAR
 %token <fun> FUN
