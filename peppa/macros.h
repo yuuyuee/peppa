@@ -29,11 +29,16 @@ R ArraySizeHelper(const T (&)[N]);
   a = tmp;                        \
 } while (0)
 
-#define PPSTR(s) PP_STR_(s)
-#define PPSTR_(s) #s
+#ifndef PPSTR_
+# define PPSTR_(s) #s
+#endif
 
-#define PPJOIN(a, b) PP_JOIN_(a, b)
+#ifndef PPSTR
+# define PPSTR(s) PPSTR_(s)
+#endif
+
 #define PPJOIN_(a, b) a ## b
+#define PPJOIN(a, b) PPJOIN_(a, b)
 
 #define PPALIGIN(n, a) (((n) + (a) - 1) & ~((a) - 1))
 #define PPCOMPARE(a, b) (((a) > (b)) - ((a) < (b)))

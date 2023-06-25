@@ -5,7 +5,7 @@
 
 #include <stdarg.h>
 
-#include "peppa/internal/macros.h"
+#include "peppa/macros.h"
 
 /* This is an simple wrapper for snprintf and vsnprintf. */
 size_t pp_format(char* buf, size_t size, const char* fmt, ...)
