@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #if defined(__cplusplus)
-# define PP_ARRAYSIZE(a) (sizeof(peppa::macros_internal::ArraySizeHelper(a)))
+# define PPARRAYSIZE(a) (sizeof(peppa::macros_internal::ArraySizeHelper(a)))
 
 namespace peppa {
 namespace macros_internal {
@@ -15,7 +15,7 @@ R ArraySizeHelper(const T (&)[N]);
 }  // namespace macros_internal
 }  // namespace peppa
 #else
-# define PP_ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
+# define PPARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
 #endif
 
 #define PPMAX(a, b) ((a) > (b) ? (a) : (b))
@@ -136,11 +136,11 @@ R ArraySizeHelper(const T (&)[N]);
 /* PP_LIKELY(), PP_UNLIKELY() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PP_HAS_BUILTIN(__builtin_expect)
-# define PP_LIKELY(x) __builtin_expect(false || (x), true)
-# define PP_UNLIKELY(x) __builtin_expect(false || (x), false)
+# define PPLIKELY(x) __builtin_expect(false || (x), true)
+# define PPUNLIKELY(x) __builtin_expect(false || (x), false)
 #else
-# define PP_LIKELY(x) (x)
-# define PP_UNLIKELY(x) (x)
+# define PPLIKELY(x) (x)
+# define PPUNLIKELY(x) (x)
 #endif
 
 #if defined(__cplusplus)
@@ -162,11 +162,11 @@ constexpr int IgnoreUnused() { return 0; }
 // This is an runtime assert and that can be used portably within
 // constexpr functions.
 #if defined(NDEBUG)
-# define PP_ASSERT(cond)  \
+# define PPASSERT(cond)  \
     (false ? static_cast<void>(cond) : static_cast<void>(0))
 #else
 # include <assert.h>
-# define PP_ASSERT(cond)                    \
+# define PPASSERT(cond)                    \
     (PP_LIKELY(cond)                        \
         ? static_cast<void>(0)              \
         : [] { assert(false && #cond); }())
