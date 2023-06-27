@@ -1,14 +1,14 @@
 // Copyright 2023 The Peppa Authors.
 
 #include <vector>
-#include "peppa/ring.h"
+#include "peppa/list.h"
 #include "gtest/gtest.h"
 
 namespace {
 
 struct Data {
   int value;
-  PeList_Node node;
+  PeNode node;
 
   static int kConstructCount;
   static int kDestructCount;
@@ -19,41 +19,41 @@ struct Data {
 int Data::kConstructCount = 0;
 int Data::kDestructCount = 0;
 
-std::vector<int> RingToVector(PeList_Node* h) {
+std::vector<int> RingToVector(PeNode* h) {
   std::vector<int> vec;
-  PeList_Node* n;
-  PP_RING_FOREACH(n, h) {
+  PeNode* n;
+  PeList_FOREACH(n, h) {
     Data* p = PeList_DATA(n, Data, node);
     vec.push_back(p->value);
   }
   return vec;
 }
 
-void FreeRing(PeList_Node* h) {
-  while (!PP_RING_EMPTY(h)) {
-    PeList_Node* n = PP_RING_NEXT(h);
-    PP_RING_REMOVE(n);
+void FreeRing(PeNode* h) {
+  while (!PeList_EMPTY(h)) {
+    PeNode* n = PeList_NEXT(h);
+    PeList_REMOVE(n);
     Data* p = PeList_DATA(n, Data, node);
     delete p;
   }
 }
 
 TEST(RingTest, InsertHead) {
-  PeList_Node h;
+  PeNode h;
   Data* p = nullptr;
 
-  PP_RING_INIT(&h);
+  PeList_INIT(&h);
 
   for (int i = 0; i < 10; ++i) {
     p = new Data;
     p->value = i;
-    PP_RING_INIT(&p->node);
-    PP_RING_INSERT_HEAD(&h, &p->node);
+    PeList_INIT(&p->node);
+    PeList_INSERT_HEAD(&h, &p->node);
   }
 
-  PeList_Node* c;
+  PeNode* c;
   int index = 10;
-  PP_RING_FOREACH(c, &h) {
+  PeList_FOREACH(c, &h) {
     Data* p = PeList_DATA(c, Data, node);
     EXPECT_EQ(p->value, --index);
   }
@@ -63,21 +63,21 @@ TEST(RingTest, InsertHead) {
 }
 
 TEST(RingTest, InsertTail) {
-  PeList_Node h;
+  PeNode h;
   Data* p = nullptr;
 
-  PP_RING_INIT(&h);
+  PeList_INIT(&h);
 
   for (int i = 0; i < 10; ++i) {
     p = new Data;
     p->value = i;
-    PP_RING_INIT(&p->node);
-    PP_RING_INSERT_TAIL(&h, &p->node);
+    PeList_INIT(&p->node);
+    PeList_INSERT_TAIL(&h, &p->node);
   }
 
-  PeList_Node* c;
+  PeNode* c;
   int index = -1;
-  PP_RING_FOREACH(c, &h) {
+  PeList_FOREACH(c, &h) {
     Data* p = PeList_DATA(c, Data, node);
     EXPECT_EQ(p->value, ++index);
   }
@@ -87,23 +87,23 @@ TEST(RingTest, InsertTail) {
 }
 
 TEST(RingTest, ADD) {
-  PeList_Node h1, h2;
+  PeNode h1, h2;
   Data* p = nullptr;
   std::vector<int> vec1, vec2, vec3;
 
-  PP_RING_INIT(&h1);
-  PP_RING_INIT(&h2);
+  PeList_INIT(&h1);
+  PeList_INIT(&h2);
 
   for (int i = 0; i < 5; ++i) {
     p = new Data;
     p->value = i;
-    PP_RING_INIT(&p->node);
+    PeList_INIT(&p->node);
 
     if (i % 2 == 0) {
-      PP_RING_INSERT_TAIL(&h1, &p->node);
+      PeList_INSERT_TAIL(&h1, &p->node);
       vec1.push_back(p->value);
     } else {
-      PP_RING_INSERT_TAIL(&h2, &p->node);
+      PeList_INSERT_TAIL(&h2, &p->node);
       vec2.push_back(p->value);
     }
   }
@@ -111,8 +111,8 @@ TEST(RingTest, ADD) {
   for (const auto& v : vec2)
     vec1.push_back(v);
 
-  PP_RING_ADD(&h1, &h2);
-  PP_RING_INIT(&h2);
+  PeList_ADD(&h1, &h2);
+  PeList_INIT(&h2);
   std::vector<int> exp1{0, 2, 4, 1, 3};
   EXPECT_EQ(vec1, exp1);
 
@@ -122,40 +122,40 @@ TEST(RingTest, ADD) {
 }
 
 TEST(RingTest, SplitMove) {
-  PeList_Node h1, h2, h3, h4;
+  PeNode h1, h2, h3, h4;
   Data* p = nullptr;
 
-  PP_RING_INIT(&h1);
-  PP_RING_INIT(&h2);
-  PP_RING_INIT(&h3);
-  PP_RING_INIT(&h4);
+  PeList_INIT(&h1);
+  PeList_INIT(&h2);
+  PeList_INIT(&h3);
+  PeList_INIT(&h4);
 
   for (int i = 0; i < 5; ++i) {
     p = new Data;
     p->value = i;
-    PP_RING_INIT(&p->node);
+    PeList_INIT(&p->node);
     if (i % 2 == 0) {
-      PP_RING_INSERT_TAIL(&h1, &p->node);
+      PeList_INSERT_TAIL(&h1, &p->node);
     } else {
-      PP_RING_INSERT_TAIL(&h2, &p->node);
+      PeList_INSERT_TAIL(&h2, &p->node);
     }
   }
 
-  // test PP_RING_SPLIT
+  // test PeList_SPLIT
   // h1 -> 0, 2, 4
-  PeList_Node* n = PP_RING_NEXT(PP_RING_NEXT(&h1));
+  PeNode* n = PeList_NEXT(PeList_NEXT(&h1));
   p = PeList_DATA(n, Data, node);
   EXPECT_EQ(p->value, 2);
-  PP_RING_SPLIT(&h1, n, &h3);
+  PeList_SPLIT(&h1, n, &h3);
   std::vector<int> exp1{0};
   std::vector<int> exp3{2, 4};
   EXPECT_EQ(RingToVector(&h1), exp1);
   EXPECT_EQ(RingToVector(&h3), exp3);
 
-  // test PP_RING_MOVE
+  // test PeList_MOVE
   // h2 -> 1, 3
-  PP_RING_MOVE(&h2, &h4);
-  EXPECT_TRUE(PP_RING_EMPTY(&h2));
+  PeList_MOVE(&h2, &h4);
+  EXPECT_TRUE(PeList_EMPTY(&h2));
   std::vector<int> exp4{1, 3};
   EXPECT_EQ(RingToVector(&h4), exp4);
 

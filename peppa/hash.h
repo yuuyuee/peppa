@@ -6,25 +6,25 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct PeHash_Context PeHash_Context;
+typedef struct PeHashContext PeHashContext;
 
 /* Allocate an hash context. */
-PeHash_Context* PeHash_alloc();
+PeHashContext* PeHash_alloc();
 
 /* Initialize or reinitialize an hash context. */
-void PeHash_init(PeHash_Context* context);
+void PeHash_init(PeHashContext* context);
 
 /* Initialize or reinitialize an hash context with a seed. */
-void PeHash_init2(PeHash_Context* context, uint32_t seed);
+void PeHash_init2(PeHashContext* context, uint32_t seed);
 
 /* Update hash context with new data. */
-void PeHash_update(PeHash_Context* context, const void* data, size_t len);
+void PeHash_update(PeHashContext* context, const void* data, size_t len);
 
 /* Finish hashing and returns hash value. */
-uint32_t PeHash_finish(PeHash_Context* context);
+uint32_t PeHash_finish(PeHashContext* context);
 
 /* Free an hash context. */
-void PeHash_free(PeHash_Context* context);
+void PeHash_free(PeHashContext* context);
 
 /* Wrapped functions */
 

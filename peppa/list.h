@@ -5,71 +5,73 @@
 
 #include <stddef.h>
 
-typedef void* PeList_Node[2];
+typedef void* PeNode[2];
 
-#define PP_RING_DATA(ptr, type, field)                \
-  ((type *) (((void *) (ptr)) - offsetof(type, field)))
+#define _PeList_OFFSET(type, member) ((size_t)&(((type *) 0)->member))
 
-#define PP_RING_NEXT(n) (*(Ring**) &((*(n))[0]))
-#define PP_RING_PREV(n) (*(Ring**) &((*(n))[1]))
+#define PeList_DATA(ptr, type, member)    \
+  ((type *) (((void *) (ptr)) - _PeList_OFFSET(type, member)))
 
-#define PP_RING_HEAD(n) (PP_RING_NEXT(n))
+#define PeList_NEXT(n) (*(PeNode**) &((*(n))[0]))
+#define PeList_PREV(n) (*(PeNode**) &((*(n))[1]))
 
-#define PP_RING_INIT(n) do {                          \
-  PP_RING_NEXT(n) = (n);                              \
-  PP_RING_PREV(n) = (n);                              \
+#define PeList_HEAD(n) (PeList_NEXT(n))
+
+#define PeList_INIT(n) do {                           \
+  PeList_NEXT(n) = (n);                               \
+  PeList_PREV(n) = (n);                               \
 } while (0)
 
-#define PP_RING_EMPTY(h)                              \
-  ((const PeList_Node *)(h) == (const PeList_Node *)PP_RING_NEXT(h))
+#define PeList_EMPTY(h)                               \
+  ((const PeNode *)(h) == (const PeNode *)PeList_NEXT(h))
 
-#define PP_RING_PREV_NEXT(n) (PP_RING_NEXT(PP_RING_PREV(n)))
-#define PP_RING_NEXT_PREV(n) (PP_RING_PREV(PP_RING_NEXT(n)))
+#define PeList_PREV_NEXT(n) (PeList_NEXT(PeList_PREV(n)))
+#define PeList_NEXT_PREV(n) (PeList_PREV(PeList_NEXT(n)))
 
-#define PP_RING_FOREACH(n, h)                         \
-  for ((n) = PP_RING_NEXT(h); (n) != (h); (n) = PP_RING_NEXT(n))
+#define PeList_FOREACH(n, h)                          \
+  for ((n) = PeList_NEXT(h); (n) != (h); (n) = PeList_NEXT(n))
 
-#define PP_RING_INSERT_HEAD(h, n) do {                \
-  PP_RING_NEXT(n) = PP_RING_NEXT(h);                  \
-  PP_RING_PREV(n) = (h);                              \
-  PP_RING_NEXT_PREV(n) = (n);                         \
-  PP_RING_NEXT(h) = (n);                              \
+#define PeList_INSERT_HEAD(h, n) do {                 \
+  PeList_NEXT(n) = PeList_NEXT(h);                    \
+  PeList_PREV(n) = (h);                               \
+  PeList_NEXT_PREV(n) = (n);                          \
+  PeList_NEXT(h) = (n);                               \
 } while (0)
 
-#define PP_RING_INSERT_TAIL(h, n) do {                \
-  PP_RING_NEXT(n) = (h);                              \
-  PP_RING_PREV(n) = PP_RING_PREV(h);                  \
-  PP_RING_PREV_NEXT(n) = (n);                         \
-  PP_RING_PREV(h) = (n);                              \
+#define PeList_INSERT_TAIL(h, n) do {                 \
+  PeList_NEXT(n) = (h);                               \
+  PeList_PREV(n) = PeList_PREV(h);                    \
+  PeList_PREV_NEXT(n) = (n);                          \
+  PeList_PREV(h) = (n);                               \
 } while (0)
 
-#define PP_RING_REMOVE(n) do {                        \
-  PP_RING_PREV_NEXT(n) = PP_RING_NEXT(n);             \
-  PP_RING_NEXT_PREV(n) = PP_RING_PREV(n);             \
+#define PeList_REMOVE(n) do {                         \
+  PeList_PREV_NEXT(n) = PeList_NEXT(n);               \
+  PeList_NEXT_PREV(n) = PeList_PREV(n);               \
 } while (0)
 
-#define PP_RING_ADD(h, h2) do {                       \
-  PP_RING_PREV_NEXT(h) = PP_RING_NEXT(h2);            \
-  PP_RING_NEXT_PREV(h2) = PP_RING_PREV(h2);           \
-  PP_RING_PREV(h) = PP_RING_PREV(h2);                 \
-  PP_RING_PREV_NEXT(h) = (h);                         \
+#define PeList_ADD(h, h2) do {                        \
+  PeList_PREV_NEXT(h) = PeList_NEXT(h2);              \
+  PeList_NEXT_PREV(h2) = PeList_PREV(h2);             \
+  PeList_PREV(h) = PeList_PREV(h2);                   \
+  PeList_PREV_NEXT(h) = (h);                          \
 } while (0)
 
-#define PP_RING_SPLIT(h, n, h2) do {                  \
-  PP_RING_PREV(h2) = PP_RING_PREV(h);                 \
-  PP_RING_PREV_NEXT(h2) = (h2);                       \
-  PP_RING_NEXT(h2) = (n);                             \
-  PP_RING_PREV(h) = PP_RING_PREV(n);                  \
-  PP_RING_PREV_NEXT(h) = (h);                         \
-  PP_RING_PREV(n) = (h2);                             \
+#define PeList_SPLIT(h, n, h2) do {                   \
+  PeList_PREV(h2) = PeList_PREV(h);                   \
+  PeList_PREV_NEXT(h2) = (h2);                        \
+  PeList_NEXT(h2) = (n);                              \
+  PeList_PREV(h) = PeList_PREV(n);                    \
+  PeList_PREV_NEXT(h) = (h);                          \
+  PeList_PREV(n) = (h2);                              \
 } while (0)
 
-#define PP_RING_MOVE(h, h2) do {                      \
-  if (PP_RING_EMPTY(h)) {                             \
-    PP_RING_INIT(h2);                                 \
+#define PeList_MOVE(h, h2) do {                       \
+  if (PeList_EMPTY(h)) {                              \
+    PeList_INIT(h2);                                  \
   } else {                                            \
-    PeList_Node* n = PP_RING_HEAD(h);                        \
-    PP_RING_SPLIT(h, n, h2);                          \
+    PeNode* n = PeList_HEAD(h);                       \
+    PeList_SPLIT(h, n, h2);                           \
   }                                                   \
 } while (0)
 

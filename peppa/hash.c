@@ -9,7 +9,7 @@
 #include "peppa/alloc.h"
 #include "peppa/macros.h"
 
-struct PeHash_Context {
+struct PeHashContext {
   uint32_t h1;
 #define Pe_CTX_SIZE 4
   uint8_t state[Pe_CTX_SIZE];
@@ -18,16 +18,16 @@ struct PeHash_Context {
 };
 
 /* Allocate an hash context. */
-PeHash_Context* PeHash_alloc() {
-  return Pe_ALLOC(PeHash_Context, 1);
+PeHashContext* PeHash_alloc() {
+  return Pe_ALLOC(PeHashContext, 1);
 }
 
 #define Pe_DFL_SEED UINT32_C(0xec4e6c89)
-void PeHash_init(PeHash_Context* context) {
+void PeHash_init(PeHashContext* context) {
   PeHash_init2(context, Pe_DFL_SEED);
 }
 
-void PeHash_init2(PeHash_Context* context, uint32_t seed) {
+void PeHash_init2(PeHashContext* context, uint32_t seed) {
   context->h1 = seed;
   context->pos = 0;
   context->len = 0;
@@ -62,7 +62,7 @@ static inline uint32_t PeHash_fmix32(uint32_t h1) {
   return h1;
 }
 
-void PeHash_update(PeHash_Context* context, const void* data, size_t len) {
+void PeHash_update(PeHashContext* context, const void* data, size_t len) {
   const uint8_t* ptr = (const uint8_t*) data;
   uint32_t h1 = context->h1, k1;
   if (len <= 0) return;
@@ -94,7 +94,7 @@ void PeHash_update(PeHash_Context* context, const void* data, size_t len) {
   }
 }
 
-uint32_t PeHash_finish(PeHash_Context* context) {
+uint32_t PeHash_finish(PeHashContext* context) {
   uint32_t h1 = context->h1;
 
   if (context->pos > 0) {
@@ -113,7 +113,7 @@ uint32_t PeHash_finish(PeHash_Context* context) {
   return h1;
 }
 
-void PeHash_free(PeHash_Context* context) {
+void PeHash_free(PeHashContext* context) {
   PeAlloc_free(context);
 }
 
@@ -122,7 +122,7 @@ uint32_t PeHash_getHashValue(const void* data, size_t len) {
 }
 
 uint32_t PeHash_getHashValue2(const void* data, size_t len, uint32_t seed) {
-  PeHash_Context ctx;
+  PeHashContext ctx;
   PeHash_init2(&ctx, seed);
   PeHash_update(&ctx, data, len);
   return PeHash_finish(&ctx);
@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
   }
   printf("Input: %s\n", argv[1]);
 
-  PeHash_Context ctx;
+  PeHashContext ctx;
   PeHash_init2(&ctx, 42);
   for (int i = 1; i < argc; ++i)
     PeHash_update(&ctx, argv[i], strlen(argv[i]));
@@ -147,4 +147,3 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 #endif
-

@@ -15,17 +15,15 @@
 #include <string.h>
 #include <stdio.h>
 
-struct Pe_ErrorEntry {
+static const struct PeErrorEntry {
   int num;
   const char* str;
-};
-
-static const struct Pe_ErrorEntry error_entries[] = {
+} error_entries[] = {
 
 };
 
-int Pe_stringError(int errnum, char* buf, size_t size) {
-  const struct Pe_ErrorEntry* entry = NULL;
+int PeErr_stringError(int errnum, char* buf, size_t size) {
+  const struct PeErrorEntry* entry = NULL;
   for (int i = 0; i < Pe_ARRAYSIZE(error_entries); ++i) {
     if (errnum == error_entries[i].num) {
       entry = &error_entries[i];

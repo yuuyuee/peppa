@@ -76,11 +76,11 @@
 /* PeAttr_LIKELY(), PeAttr_UNLIKELY() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     PeAttr_HAS_BUILTIN(__builtin_expect)
-# define PPLIKELY(x) __builtin_expect(false || (x), true)
-# define PPUNLIKELY(x) __builtin_expect(false || (x), false)
+# define Pe_LIKELY(x) __builtin_expect(false || (x), true)
+# define Pe_UNLIKELY(x) __builtin_expect(false || (x), false)
 #else
-# define PPLIKELY(x) (x)
-# define PPUNLIKELY(x) (x)
+# define Pe_LIKELY(x) (x)
+# define Pe_UNLIKELY(x) (x)
 #endif
 
 #endif  /* PEPPA_ATTRIBUTES_H_ */

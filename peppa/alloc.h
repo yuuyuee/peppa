@@ -5,7 +5,7 @@
 
 #include <stddef.h>
 
-typedef struct PeAlloc_Allocator {
+typedef struct PeAllocator {
   /* Allocates size bytes and returns a pointer to the allocated memory,
    * if size is 0 or error occured, return NULL. */
   void* (*alloc)(size_t size);
@@ -19,10 +19,10 @@ typedef struct PeAlloc_Allocator {
 
   /* Frees the memory space pointed to by ptr. */
   void (*free)(void* ptr);
-} PeAlloc_Allocator;
+} PeAllocator;
 
-const PeAlloc_Allocator* PeAlloc_getAlloc();
-void PeAlloc_setAlloc(const PeAlloc_Allocator* allocator);
+const PeAllocator* PeAlloc_getAlloc();
+void PeAlloc_setAlloc(const PeAllocator* allocator);
 
 /* Wrapped functions */
 

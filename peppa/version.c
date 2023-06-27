@@ -2,16 +2,14 @@
 
 #include "peppa/version.h"
 
-int PeVersion_getVersion() {
-  return Pe_VERSION;
+int PeVer_getVersion() {
+  return PeVer_VERSION;
 }
 
-const char* PeVersion_getVersionString() {
-  return Pe_VERSION_S;
+const char* PeVer_getVersionString() {
+  return PeVer_VERSION_S;
 }
 
-const char* PeVersion_getCopyRight() {
-  static const char* kCopyRight = "Copyright 2023 The Peppa Authors";
-  return kCopyRight;
+const char* PeVer_getCopyRight() {
+  return "Copyright 2023 The Peppa Authors";
 }
-

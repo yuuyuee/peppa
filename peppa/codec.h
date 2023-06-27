@@ -4,10 +4,6 @@
 #define PEPPA_CODEC_H_
 
 #include <stdint.h>
-#include <stddef.h>
-
-#define _Pe_INT(bit) int ## bit ## _t
-#define _Pe_UINT(bit) uint ## bit ## _t
 
 #define PeCodec_LOAD8(p) (*(const uint8_t*) (p))
 #define PeCodec_LOAD16(p) (*(const uint16_t*) (p))

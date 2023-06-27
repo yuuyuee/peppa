@@ -5,22 +5,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const PeAlloc_Allocator kDefaultAllocator = {
+static const PeAllocator kDefaultAllocator = {
   malloc, realloc, free
 };
 
-static const PeAlloc_Allocator* alloc = NULL;
+static const PeAllocator* alloc = NULL;
 
-const PeAlloc_Allocator* getAlloc() {
+const PeAllocator* PeAlloc_getAlloc() {
   return alloc ? alloc : &kDefaultAllocator;
 }
 
-void setAlloc(const PeAlloc_Allocator* allocator) {
+void PeAlloc_setAlloc(const PeAllocator* allocator) {
   alloc = allocator;
 }
 
 void* PeAlloc_alloc(size_t size) {
-  return size > 0 ? getAlloc()->alloc(size) : NULL;
+  return size > 0 ? PeAlloc_getAlloc()->alloc(size) : NULL;
 }
 
 void* PeAlloc_allocz(size_t size) {
@@ -33,7 +33,7 @@ void* PeAlloc_allocz(size_t size) {
 void* PeAlloc_realloc(void* ptr, size_t size) {
   if (ptr) {
     if (size > 0)
-      return getAlloc()->realloc(ptr, size);
+      return PeAlloc_getAlloc()->realloc(ptr, size);
     PeAlloc_free(ptr);
     return NULL;
   }
@@ -41,5 +41,5 @@ void* PeAlloc_realloc(void* ptr, size_t size) {
 }
 
 void PeAlloc_free(void* ptr) {
-  getAlloc()->free(ptr);
+  PeAlloc_getAlloc()->free(ptr);
 }
