@@ -23,17 +23,17 @@ std::vector<int> RingToVector(PeNode* h) {
   std::vector<int> vec;
   PeNode* n;
   PeList_FOREACH(n, h) {
-    Data* p = PeList_DATA(n, Data, node);
+    Data* p = PeList_getData(n, Data, node);
     vec.push_back(p->value);
   }
   return vec;
 }
 
 void FreeRing(PeNode* h) {
-  while (!PeList_EMPTY(h)) {
-    PeNode* n = PeList_NEXT(h);
-    PeList_REMOVE(n);
-    Data* p = PeList_DATA(n, Data, node);
+  while (!PeList_empty(h)) {
+    PeNode* n = PeList_next(h);
+    PeList_remove(n);
+    Data* p = PeList_getData(n, Data, node);
     delete p;
   }
 }
@@ -42,19 +42,19 @@ TEST(RingTest, InsertHead) {
   PeNode h;
   Data* p = nullptr;
 
-  PeList_INIT(&h);
+  PeList_init(&h);
 
   for (int i = 0; i < 10; ++i) {
     p = new Data;
     p->value = i;
-    PeList_INIT(&p->node);
-    PeList_INSERT_HEAD(&h, &p->node);
+    PeList_init(&p->node);
+    PeList_insertHead(&h, &p->node);
   }
 
   PeNode* c;
   int index = 10;
   PeList_FOREACH(c, &h) {
-    Data* p = PeList_DATA(c, Data, node);
+    Data* p = PeList_getData(c, Data, node);
     EXPECT_EQ(p->value, --index);
   }
 
@@ -66,19 +66,19 @@ TEST(RingTest, InsertTail) {
   PeNode h;
   Data* p = nullptr;
 
-  PeList_INIT(&h);
+  PeList_init(&h);
 
   for (int i = 0; i < 10; ++i) {
     p = new Data;
     p->value = i;
-    PeList_INIT(&p->node);
-    PeList_INSERT_TAIL(&h, &p->node);
+    PeList_init(&p->node);
+    PeList_insertTail(&h, &p->node);
   }
 
   PeNode* c;
   int index = -1;
   PeList_FOREACH(c, &h) {
-    Data* p = PeList_DATA(c, Data, node);
+    Data* p = PeList_getData(c, Data, node);
     EXPECT_EQ(p->value, ++index);
   }
 
@@ -91,19 +91,19 @@ TEST(RingTest, ADD) {
   Data* p = nullptr;
   std::vector<int> vec1, vec2, vec3;
 
-  PeList_INIT(&h1);
-  PeList_INIT(&h2);
+  PeList_init(&h1);
+  PeList_init(&h2);
 
   for (int i = 0; i < 5; ++i) {
     p = new Data;
     p->value = i;
-    PeList_INIT(&p->node);
+    PeList_init(&p->node);
 
     if (i % 2 == 0) {
-      PeList_INSERT_TAIL(&h1, &p->node);
+      PeList_insertTail(&h1, &p->node);
       vec1.push_back(p->value);
     } else {
-      PeList_INSERT_TAIL(&h2, &p->node);
+      PeList_insertTail(&h2, &p->node);
       vec2.push_back(p->value);
     }
   }
@@ -111,8 +111,8 @@ TEST(RingTest, ADD) {
   for (const auto& v : vec2)
     vec1.push_back(v);
 
-  PeList_ADD(&h1, &h2);
-  PeList_INIT(&h2);
+  PeList_add(&h1, &h2);
+  PeList_init(&h2);
   std::vector<int> exp1{0, 2, 4, 1, 3};
   EXPECT_EQ(vec1, exp1);
 
@@ -125,37 +125,37 @@ TEST(RingTest, SplitMove) {
   PeNode h1, h2, h3, h4;
   Data* p = nullptr;
 
-  PeList_INIT(&h1);
-  PeList_INIT(&h2);
-  PeList_INIT(&h3);
-  PeList_INIT(&h4);
+  PeList_init(&h1);
+  PeList_init(&h2);
+  PeList_init(&h3);
+  PeList_init(&h4);
 
   for (int i = 0; i < 5; ++i) {
     p = new Data;
     p->value = i;
-    PeList_INIT(&p->node);
+    PeList_init(&p->node);
     if (i % 2 == 0) {
-      PeList_INSERT_TAIL(&h1, &p->node);
+      PeList_insertTail(&h1, &p->node);
     } else {
-      PeList_INSERT_TAIL(&h2, &p->node);
+      PeList_insertTail(&h2, &p->node);
     }
   }
 
-  // test PeList_SPLIT
+  // test PeList_split
   // h1 -> 0, 2, 4
-  PeNode* n = PeList_NEXT(PeList_NEXT(&h1));
-  p = PeList_DATA(n, Data, node);
+  PeNode* n = PeList_next(PeList_next(&h1));
+  p = PeList_getData(n, Data, node);
   EXPECT_EQ(p->value, 2);
-  PeList_SPLIT(&h1, n, &h3);
+  PeList_split(&h1, n, &h3);
   std::vector<int> exp1{0};
   std::vector<int> exp3{2, 4};
   EXPECT_EQ(RingToVector(&h1), exp1);
   EXPECT_EQ(RingToVector(&h3), exp3);
 
-  // test PeList_MOVE
+  // test PeList_move
   // h2 -> 1, 3
-  PeList_MOVE(&h2, &h4);
-  EXPECT_TRUE(PeList_EMPTY(&h2));
+  PeList_move(&h2, &h4);
+  EXPECT_TRUE(PeList_empty(&h2));
   std::vector<int> exp4{1, 3};
   EXPECT_EQ(RingToVector(&h4), exp4);
 
