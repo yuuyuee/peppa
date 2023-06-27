@@ -5,7 +5,7 @@
 
 #include <stddef.h>
 
-typedef struct Allocator {
+typedef struct PeAlloc_Allocator {
   /* Allocates size bytes and returns a pointer to the allocated memory,
    * if size is 0 or error occured, return NULL. */
   void* (*alloc)(size_t size);
@@ -19,28 +19,26 @@ typedef struct Allocator {
 
   /* Frees the memory space pointed to by ptr. */
   void (*free)(void* ptr);
-} Allocator;
+} PeAlloc_Allocator;
 
-const Allocator* getAlloc();
-void setAlloc(const Allocator* allocator);
+const PeAlloc_Allocator* PeAlloc_getAlloc();
+void PeAlloc_setAlloc(const PeAlloc_Allocator* allocator);
 
 /* Wrapped functions */
 
 /* Allocates size bytes and returns a pointer to the allocated memory. */
-void* allocMemory(size_t size);
+void* PeAlloc_alloc(size_t size);
 
-/* Like as "allocMemory" and the memory is set to zero. */
-void* allocMemoryZero(size_t size);
+/* Like as "PeAlloc_alloc" but the memory is set to zero. */
+void* PeAlloc_allocz(size_t size);
 
 /* Changes the size of the memory pointed to by ptr to size bytes. */
-void* reallocMemory(void* ptr, size_t size);
+void* PeAlloc_realloc(void* ptr, size_t size);
 
 /* Frees the memory space. */
-void freeMemory(void* ptr);
+void PeAlloc_free(void* ptr);
 
-#define PPALLOC(type) ((type*) allocMemory(sizeof(type)))
-#define PPALLOCN(type, n) ((type*) allocMemory(sizeof(type) * (n)))
-#define PPALLOCZ(type) ((type*) allocMemoryZero(sizeof(type)))
-#define PPALLOCZN(type, n) ((type*) allocMemoryZero(sizeof(type) * (n)))
+#define Pe_ALLOC(type, n) ((type*) PeAlloc_alloc(sizeof(type) * (n)))
+#define Pe_ALLOC_Z(type, n) ((type*) PeAlloc_allocz(sizeof(type) * (n)))
 
 #endif  /* PEPPA_ALLOC_H_ */

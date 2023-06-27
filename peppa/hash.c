@@ -2,146 +2,149 @@
 
 #include "peppa/hash.h"
 
-#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
-#include "peppa/macros.h"
+#include "peppa/codec.h"
 #include "peppa/alloc.h"
+#include "peppa/macros.h"
 
-#define ROTL(x, r, n) (((x) << (r)) | ((x) >> ((n) - (r))))
-#define ROTL32(x, r) ROTL(x, r, 32)
-#define ROTL64(x, r) ROTL(x, r, 64)
-
-#define FMIX32(h)   \
-  h ^= h >> 16;     \
-  h *= 0x85ebca6b;  \
-  h ^= h >> 13;     \
-  h *= 0xc2b2ae35;  \
-  h ^= h >> 16
-
-#define FMIX64(k)             \
-  k ^= k >> 33;               \
-  k *= 0xff51afd7ed558ccdULL; \
-  k ^= k >> 33;               \
-  k *= 0xc4ceb9fe1a85ec53ULL; \
-  k ^= k >> 33
-
-#define C1 UINT32_C(0xcc9e2d51)
-#define C2 UINT32_C(0x1b873593)
-
-#define K1 UINT64_C(0xc3a5c85c97cb3127)
-#define K2 UINT64_C(0xb492b66fbe98f273)
-#define K3 UINT64_C(0x9ae16a3b2f90404f)
-
-struct HashContext {
-  uint64_t seed;
-  uint64_t hash;
-  uint8_t state[16];
+struct PeHash_Context {
+  uint32_t h1;
+#define Pe_CTX_SIZE 4
+  uint8_t state[Pe_CTX_SIZE];
   int pos;
   uint64_t len;
 };
 
 /* Allocate an hash context. */
-HashContext* allocHashContext() {
-  return PPALLOC(HashContext);
+PeHash_Context* PeHash_alloc() {
+  return Pe_ALLOC(PeHash_Context, 1);
 }
 
-void initHashContext(HashContext* context) {
-  memset(context, 0, sizeof(*context));
+#define Pe_DFL_SEED UINT32_C(0xec4e6c89)
+void PeHash_init(PeHash_Context* context) {
+  PeHash_init2(context, Pe_DFL_SEED);
 }
 
-void initHashContext2(HashContext* context, uint64_t seed) {
-  initHashContext(context);
-  context->seed = seed;
+void PeHash_init2(PeHash_Context* context, uint32_t seed) {
+  context->h1 = seed;
+  context->pos = 0;
+  context->len = 0;
 }
 
-void updateHashContext(HashContext* context, const void* data, size_t size) {
+#define _Pe_ROTL(x, r, n) (((x) << (r)) | ((x) >> ((n) - (r))))
+#define Pe_ROTL32(x, r) (r == 0 ? x : _Pe_ROTL(x, r, 32))
+#define Pe_C1 UINT32_C(0xcc9e2d51)
+#define Pe_C2 UINT32_C(0x1b873593)
 
+static inline uint32_t PeHash_getK1(const uint8_t* ptr) {
+  uint32_t k1 = PeCodec_LOAD32(ptr);
+  k1 *= Pe_C1;
+  k1 = Pe_ROTL32(k1, 15);
+  k1 *= Pe_C2;
+  return k1;
 }
 
-uint64_t finishHashContext(HashContext* context) {
-
+static inline uint32_t PeHash_updateH1(uint32_t h1, uint64_t k1) {
+  h1 ^= k1;
+  h1 = Pe_ROTL32(h1, 13);
+  h1 = h1 * 5 + UINT32_C(0xe6546b64);
+  return h1;
 }
 
-void freeHashContext(HashContext* context) {
-  freeMemory(context);
+static inline uint32_t PeHash_fmix32(uint32_t h1) {
+  h1 ^= h1 >> 16;
+  h1 *= UINT32_C(0x85ebca6b);
+  h1 ^= h1 >> 13;
+  h1 *= UINT32_C(0xc2b2ae35);
+  h1 ^= h1 >> 16;
+  return h1;
 }
 
-void MurmurHash3_x64_128 ( const void * key, const int len,
-                           const uint32_t seed, void * out )
-{
-  const uint8_t * data = (const uint8_t*)key;
-  const int nblocks = len / 16;
-  int i;
+void PeHash_update(PeHash_Context* context, const void* data, size_t len) {
+  const uint8_t* ptr = (const uint8_t*) data;
+  uint32_t h1 = context->h1, k1;
+  if (len <= 0) return;
+  context->len += len;
 
-  uint64_t h1 = seed;
-  uint64_t h2 = seed;
-
-  uint64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
-  uint64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
-
-  //----------
-  // body
-
-  const uint64_t * blocks = (const uint64_t *)(data);
-
-  for(i = 0; i < nblocks; i++)
-  {
-    uint64_t k1 = getblock(blocks,i*2+0);
-    uint64_t k2 = getblock(blocks,i*2+1);
-
-    k1 *= c1; k1  = ROTL64(k1,31); k1 *= c2; h1 ^= k1;
-
-    h1 = ROTL64(h1,27); h1 += h2; h1 = h1*5+0x52dce729;
-
-    k2 *= c2; k2  = ROTL64(k2,33); k2 *= c1; h2 ^= k2;
-
-    h2 = ROTL64(h2,31); h2 += h1; h2 = h2*5+0x38495ab5;
+  if (context->pos > 0) {
+    while (context->pos < Pe_CTX_SIZE) {
+      context->state[context->pos++] = *ptr++;
+      if (--len <= 0)
+        return;
+    }
+    k1 = PeHash_getK1(context->state);
+    h1 = PeHash_updateH1(h1, k1);
+    context->pos = 0;
   }
 
-  //----------
-  // tail
+  int nblock = len / Pe_CTX_SIZE;
+  for (; nblock > 0; --nblock) {
+    k1 = PeHash_getK1(ptr);
+    h1 = PeHash_updateH1(h1, k1);
+    ptr += Pe_CTX_SIZE;
+    len -= Pe_CTX_SIZE;
+  }
+  context->h1 = h1;
 
-  const uint8_t * tail = (const uint8_t*)(data + nblocks*16);
-
-  uint64_t k1 = 0;
-  uint64_t k2 = 0;
-
-  switch(len & 15)
-  {
-  case 15: k2 ^= (uint64_t)(tail[14]) << 48;
-  case 14: k2 ^= (uint64_t)(tail[13]) << 40;
-  case 13: k2 ^= (uint64_t)(tail[12]) << 32;
-  case 12: k2 ^= (uint64_t)(tail[11]) << 24;
-  case 11: k2 ^= (uint64_t)(tail[10]) << 16;
-  case 10: k2 ^= (uint64_t)(tail[ 9]) << 8;
-  case  9: k2 ^= (uint64_t)(tail[ 8]) << 0;
-           k2 *= c2; k2  = ROTL64(k2,33); k2 *= c1; h2 ^= k2;
-
-  case  8: k1 ^= (uint64_t)(tail[ 7]) << 56;
-  case  7: k1 ^= (uint64_t)(tail[ 6]) << 48;
-  case  6: k1 ^= (uint64_t)(tail[ 5]) << 40;
-  case  5: k1 ^= (uint64_t)(tail[ 4]) << 32;
-  case  4: k1 ^= (uint64_t)(tail[ 3]) << 24;
-  case  3: k1 ^= (uint64_t)(tail[ 2]) << 16;
-  case  2: k1 ^= (uint64_t)(tail[ 1]) << 8;
-  case  1: k1 ^= (uint64_t)(tail[ 0]) << 0;
-           k1 *= c1; k1  = ROTL64(k1,31); k1 *= c2; h1 ^= k1;
-  };
-
-  //----------
-  // finalization
-
-  h1 ^= len; h2 ^= len;
-
-  h1 += h2;
-  h2 += h1;
-
-  h1 = fmix64(h1);
-  h2 = fmix64(h2);
-
-  h1 += h2;
-  h2 += h1;
-
-  ((uint64_t*)out)[0] = h1;
-  ((uint64_t*)out)[1] = h2;
+  if (len > 0) {
+    memcpy(context->state, ptr, len);
+    context->pos = len;
+  }
 }
+
+uint32_t PeHash_finish(PeHash_Context* context) {
+  uint32_t h1 = context->h1;
+
+  if (context->pos > 0) {
+    memset(context->state + context->pos, 0, Pe_CTX_SIZE - context->pos);
+    /* There is different from MurmurHash3 x86_32. */
+    uint32_t k1 = PeHash_getK1(context->state);
+    k1 *= Pe_C1;
+    k1 = Pe_ROTL32(k1, 15);
+    k1 *= Pe_C2;
+    h1 ^= k1;
+  }
+
+  h1 ^= context->len;
+  h1 = PeHash_fmix32(h1);
+
+  return h1;
+}
+
+void PeHash_free(PeHash_Context* context) {
+  PeAlloc_free(context);
+}
+
+uint32_t PeHash_getHashValue(const void* data, size_t len) {
+  return PeHash_getHashValue2(data, len, Pe_DFL_SEED);
+}
+
+uint32_t PeHash_getHashValue2(const void* data, size_t len, uint32_t seed) {
+  PeHash_Context ctx;
+  PeHash_init2(&ctx, seed);
+  PeHash_update(&ctx, data, len);
+  return PeHash_finish(&ctx);
+}
+
+#ifdef PE_HASH_TEST
+#include <stdio.h>
+
+int main(int argc, char* argv[]) {
+  if (argc < 2) {
+    printf("%s \"string to hash\"\n", argv[0]);
+    return 0;
+  }
+  printf("Input: %s\n", argv[1]);
+
+  PeHash_Context ctx;
+  PeHash_init2(&ctx, 42);
+  for (int i = 1; i < argc; ++i)
+    PeHash_update(&ctx, argv[i], strlen(argv[i]));
+  unsigned int v = PeHash_finish(&ctx);
+  printf("getHashValue: %#x\n", v);
+  return 0;
+}
+#endif
+

@@ -8,7 +8,7 @@ namespace {
 
 struct Data {
   int value;
-  Ring node;
+  PeList_Node node;
 
   static int kConstructCount;
   static int kDestructCount;
@@ -19,27 +19,27 @@ struct Data {
 int Data::kConstructCount = 0;
 int Data::kDestructCount = 0;
 
-std::vector<int> RingToVector(Ring* h) {
+std::vector<int> RingToVector(PeList_Node* h) {
   std::vector<int> vec;
-  Ring* n;
+  PeList_Node* n;
   PP_RING_FOREACH(n, h) {
-    Data* p = PP_RING_DATA(n, Data, node);
+    Data* p = PeList_DATA(n, Data, node);
     vec.push_back(p->value);
   }
   return vec;
 }
 
-void FreeRing(Ring* h) {
+void FreeRing(PeList_Node* h) {
   while (!PP_RING_EMPTY(h)) {
-    Ring* n = PP_RING_NEXT(h);
+    PeList_Node* n = PP_RING_NEXT(h);
     PP_RING_REMOVE(n);
-    Data* p = PP_RING_DATA(n, Data, node);
+    Data* p = PeList_DATA(n, Data, node);
     delete p;
   }
 }
 
 TEST(RingTest, InsertHead) {
-  Ring h;
+  PeList_Node h;
   Data* p = nullptr;
 
   PP_RING_INIT(&h);
@@ -51,10 +51,10 @@ TEST(RingTest, InsertHead) {
     PP_RING_INSERT_HEAD(&h, &p->node);
   }
 
-  Ring* c;
+  PeList_Node* c;
   int index = 10;
   PP_RING_FOREACH(c, &h) {
-    Data* p = PP_RING_DATA(c, Data, node);
+    Data* p = PeList_DATA(c, Data, node);
     EXPECT_EQ(p->value, --index);
   }
 
@@ -63,7 +63,7 @@ TEST(RingTest, InsertHead) {
 }
 
 TEST(RingTest, InsertTail) {
-  Ring h;
+  PeList_Node h;
   Data* p = nullptr;
 
   PP_RING_INIT(&h);
@@ -75,10 +75,10 @@ TEST(RingTest, InsertTail) {
     PP_RING_INSERT_TAIL(&h, &p->node);
   }
 
-  Ring* c;
+  PeList_Node* c;
   int index = -1;
   PP_RING_FOREACH(c, &h) {
-    Data* p = PP_RING_DATA(c, Data, node);
+    Data* p = PeList_DATA(c, Data, node);
     EXPECT_EQ(p->value, ++index);
   }
 
@@ -87,7 +87,7 @@ TEST(RingTest, InsertTail) {
 }
 
 TEST(RingTest, ADD) {
-  Ring h1, h2;
+  PeList_Node h1, h2;
   Data* p = nullptr;
   std::vector<int> vec1, vec2, vec3;
 
@@ -122,7 +122,7 @@ TEST(RingTest, ADD) {
 }
 
 TEST(RingTest, SplitMove) {
-  Ring h1, h2, h3, h4;
+  PeList_Node h1, h2, h3, h4;
   Data* p = nullptr;
 
   PP_RING_INIT(&h1);
@@ -143,8 +143,8 @@ TEST(RingTest, SplitMove) {
 
   // test PP_RING_SPLIT
   // h1 -> 0, 2, 4
-  Ring* n = PP_RING_NEXT(PP_RING_NEXT(&h1));
-  p = PP_RING_DATA(n, Data, node);
+  PeList_Node* n = PP_RING_NEXT(PP_RING_NEXT(&h1));
+  p = PeList_DATA(n, Data, node);
   EXPECT_EQ(p->value, 2);
   PP_RING_SPLIT(&h1, n, &h3);
   std::vector<int> exp1{0};

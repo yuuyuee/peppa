@@ -1,11 +1,11 @@
 /* Copyright 2023 The Peppa Authors. */
 
-#ifndef PEPPA_RING_H_
-#define PEPPA_RING_H_
+#ifndef PEPPA_LIST_H_
+#define PEPPA_LIST_H_
 
 #include <stddef.h>
 
-typedef void* Ring[2];
+typedef void* PeList_Node[2];
 
 #define PP_RING_DATA(ptr, type, field)                \
   ((type *) (((void *) (ptr)) - offsetof(type, field)))
@@ -21,7 +21,7 @@ typedef void* Ring[2];
 } while (0)
 
 #define PP_RING_EMPTY(h)                              \
-  ((const Ring *)(h) == (const Ring *)PP_RING_NEXT(h))
+  ((const PeList_Node *)(h) == (const PeList_Node *)PP_RING_NEXT(h))
 
 #define PP_RING_PREV_NEXT(n) (PP_RING_NEXT(PP_RING_PREV(n)))
 #define PP_RING_NEXT_PREV(n) (PP_RING_PREV(PP_RING_NEXT(n)))
@@ -68,9 +68,9 @@ typedef void* Ring[2];
   if (PP_RING_EMPTY(h)) {                             \
     PP_RING_INIT(h2);                                 \
   } else {                                            \
-    Ring* n = PP_RING_HEAD(h);                        \
+    PeList_Node* n = PP_RING_HEAD(h);                        \
     PP_RING_SPLIT(h, n, h2);                          \
   }                                                   \
 } while (0)
 
-#endif  /* PEPPA_RING_H_ */
+#endif  /* PEPPA_LIST_H_ */

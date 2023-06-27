@@ -3,42 +3,43 @@
 #include "peppa/alloc.h"
 
 #include <stdlib.h>
+#include <string.h>
 
-static const Allocator kDefaultAllocator = {
+static const PeAlloc_Allocator kDefaultAllocator = {
   malloc, realloc, free
 };
 
-static const Allocator* alloc = NULL;
+static const PeAlloc_Allocator* alloc = NULL;
 
-const Allocator* getAlloc() {
+const PeAlloc_Allocator* getAlloc() {
   return alloc ? alloc : &kDefaultAllocator;
 }
 
-void setAlloc(const Allocator* allocator) {
+void setAlloc(const PeAlloc_Allocator* allocator) {
   alloc = allocator;
 }
 
-void* allocMemory(size_t size) {
+void* PeAlloc_alloc(size_t size) {
   return size > 0 ? getAlloc()->alloc(size) : NULL;
 }
 
-void* allocMemoryZero(size_t size) {
-  void* ptr = allocMemory(size);
+void* PeAlloc_allocz(size_t size) {
+  void* ptr = PeAlloc_alloc(size);
   if (ptr)
     memset(ptr, 0, size);
   return ptr;
 }
 
-void* reallocMemory(void* ptr, size_t size) {
+void* PeAlloc_realloc(void* ptr, size_t size) {
   if (ptr) {
     if (size > 0)
       return getAlloc()->realloc(ptr, size);
-    getAlloc()->free(ptr);
+    PeAlloc_free(ptr);
     return NULL;
   }
-  return allocMemory(size);
+  return PeAlloc_alloc(size);
 }
 
-void freeMemory(void* ptr) {
+void PeAlloc_free(void* ptr) {
   getAlloc()->free(ptr);
 }

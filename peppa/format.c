@@ -4,7 +4,7 @@
 
 #include "peppa/format.h"
 
-size_t pp_format(char* buf, size_t size, const char* fmt, ...) {
+size_t Pe_format(char* buf, size_t size, const char* fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
   int ret = pp_vformat(buf, size, fmt, ap);
@@ -12,7 +12,7 @@ size_t pp_format(char* buf, size_t size, const char* fmt, ...) {
   return ret;
 }
 
-size_t pp_vformat(char* buf, size_t size, const char* fmt, va_list ap) {
+size_t Pe_formatv(char* buf, size_t size, const char* fmt, va_list ap) {
   int ret = vsnprintf(buf, size, fmt, ap);
   if (ret < 0) {
     buf[0] = '\0';
