@@ -7,17 +7,12 @@
 extern "C" {
 #endif
 
-
-/* Syntax parsing API */
-
-struct pp_parser;
-typedef struct pp_parser pp_parser_t;
+#include <stdint.h>
 
 
-int pp_parse(pp_parser_t* parser, const char* fname);
 
 
-/* Virtual machine API */
+
 
 #ifdef __cplusplus
 }

@@ -20,7 +20,7 @@
 %option noinput nounput
 %option reentrant yylineno
 %option bison-bridge bison-locations
-%option prefix="pp"
+%option prefix="Pe_"
 
 %x SINGLE_QUOTE_STR DOUBLE_QUOTE_STR
 

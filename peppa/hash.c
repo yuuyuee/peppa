@@ -3,11 +3,9 @@
 #include "peppa/hash.h"
 
 #include <string.h>
-#include <assert.h>
 
 #include "peppa/codec.h"
 #include "peppa/alloc.h"
-#include "peppa/macros.h"
 
 struct PeHashContext {
   uint32_t h1;
@@ -19,7 +17,7 @@ struct PeHashContext {
 
 /* Allocate an hash context. */
 PeHashContext* PeHash_alloc() {
-  return Pe_ALLOC(PeHashContext, 1);
+  return PeAlloc_alloc(sizeof(PeHashContext));
 }
 
 #define Pe_DFL_SEED UINT32_C(0xec4e6c89)
@@ -46,7 +44,7 @@ static inline uint32_t PeHash_getK1(const uint8_t* ptr) {
   return k1;
 }
 
-static inline uint32_t PeHash_updateH1(uint32_t h1, uint64_t k1) {
+static inline uint32_t PeHash_updateH1(uint32_t h1, uint32_t k1) {
   h1 ^= k1;
   h1 = Pe_ROTL32(h1, 13);
   h1 = h1 * 5 + UINT32_C(0xe6546b64);

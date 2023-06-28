@@ -5,7 +5,7 @@
 ```EBNF
 (* The syntax of Conf v2.0 in Backus-Naur Form. *)
 
-program ::= (class_def | func_def | assign_stmt)+
+program ::= (func_def | assign_stmt)+
 
 block ::= '{' (compound_statement | statement)* '}'
 
@@ -227,7 +227,6 @@ assert_stmt ::= 'assert' expression [',' expression]
 
 (* compound statement *)
 compound_statement ::= func_def
-                     | class_def
                      | if_stmt
                      | for_stmt
                      | match_stmt
@@ -239,9 +238,6 @@ param_list ::= params [',' v_param] | v_param
 v_param ::= '...'
 params ::= param (',' param)*
 param ::= identifier ['=' expression]
-
-(* class definition *)
-class_def ::= 'class' identifier '{' func_def* '}'
 
 (* if-elif-else statement *)
 if_stmt ::= 'if' expression block elif_stmt* [else_stmt]

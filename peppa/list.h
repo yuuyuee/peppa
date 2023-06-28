@@ -9,7 +9,7 @@ typedef void* PeNode[2];
 
 #define PeList_offset(type, member) ((size_t)&(((type *) 0)->member))
 
-#define PeList_getData(ptr, type, member) \
+#define PeList_get(ptr, type, member) \
   ((type *) (((void *) (ptr)) - PeList_offset(type, member)))
 
 #define PeList_next(n) (*(PeNode**) &((*(n))[0]))
@@ -27,7 +27,7 @@ typedef void* PeNode[2];
 #define PeList_empty(h)                               \
   ((const PeNode *)(h) == (const PeNode *)PeList_next(h))
 
-#define PeList_FOREACH(n, h)                          \
+#define PeList_foreach(n, h)                          \
   for ((n) = PeList_next(h); (n) != (h); (n) = PeList_next(n))
 
 #define PeList_insertHead(h, n) do {                  \
