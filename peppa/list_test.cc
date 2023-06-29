@@ -1,7 +1,10 @@
 // Copyright 2023 The Peppa Authors.
 
-#include <vector>
+extern "C" {
 #include "peppa/list.h"
+}
+
+#include <vector>
 #include "gtest/gtest.h"
 
 namespace {
@@ -29,7 +32,7 @@ std::vector<int> RingToVector(PeNode* h) {
   return vec;
 }
 
-void FreeRing(PeNode* h) {
+void FreeList(PeNode* h) {
   while (!PeList_empty(h)) {
     PeNode* n = PeList_next(h);
     PeList_remove(n);
@@ -58,7 +61,7 @@ TEST(RingTest, InsertHead) {
     EXPECT_EQ(p->value, --index);
   }
 
-  FreeRing(&h);
+  FreeList(&h);
   EXPECT_EQ(Data::kConstructCount, Data::kDestructCount);
 }
 
@@ -82,7 +85,7 @@ TEST(RingTest, InsertTail) {
     EXPECT_EQ(p->value, ++index);
   }
 
-  FreeRing(&h);
+  FreeList(&h);
   EXPECT_EQ(Data::kConstructCount, Data::kDestructCount);
 }
 
@@ -116,8 +119,8 @@ TEST(RingTest, ADD) {
   std::vector<int> exp1{0, 2, 4, 1, 3};
   EXPECT_EQ(vec1, exp1);
 
-  FreeRing(&h1);
-  FreeRing(&h2);
+  FreeList(&h1);
+  FreeList(&h2);
   EXPECT_EQ(Data::kConstructCount, Data::kDestructCount);
 }
 
@@ -159,10 +162,10 @@ TEST(RingTest, SplitMove) {
   std::vector<int> exp4{1, 3};
   EXPECT_EQ(RingToVector(&h4), exp4);
 
-  FreeRing(&h1);
-  FreeRing(&h2);
-  FreeRing(&h3);
-  FreeRing(&h4);
+  FreeList(&h1);
+  FreeList(&h2);
+  FreeList(&h3);
+  FreeList(&h4);
   EXPECT_EQ(Data::kConstructCount, Data::kDestructCount);
 }
 

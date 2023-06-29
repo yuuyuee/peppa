@@ -5,7 +5,7 @@
 
 #include <stddef.h>
 
-typedef struct PeAllocator {
+typedef struct Pe_Alloc {
   /* Allocates size bytes and returns a pointer to the allocated memory,
    * if size is 0 or error occured, return NULL. */
   void* (*alloc)(size_t size);
@@ -19,26 +19,23 @@ typedef struct PeAllocator {
 
   /* Frees the memory space pointed to by ptr. */
   void (*free)(void* ptr);
-} PeAllocator;
+} Pe_Alloc;
 
-const PeAllocator* PeAlloc_getAlloc();
-void PeAlloc_setAlloc(const PeAllocator* allocator);
+const Pe_Alloc* Pe_getAlloc();
+void Pe_setAlloc(const Pe_Alloc* allocator);
 
 /* Wrapped functions */
 
 /* Allocates size bytes and returns a pointer to the allocated memory. */
-void* PeAlloc_alloc(size_t size);
+void* Pe_alloc(size_t size);
 
-/* Like as "PeAlloc_alloc" but the memory is set to zero. */
-void* PeAlloc_allocz(size_t size);
+/* Like as "Pe_alloc" but the memory is set to zero. */
+void* Pe_allocz(size_t size);
 
 /* Changes the size of the memory pointed to by ptr to size bytes. */
-void* PeAlloc_realloc(void* ptr, size_t size);
+void* Pe_realloc(void* ptr, size_t size);
 
 /* Frees the memory space. */
-void PeAlloc_free(void* ptr);
-
-#define Pe_ALLOC(type, n) ((type*) PeAlloc_alloc(sizeof(type) * (n)))
-#define Pe_ALLOC_Z(type, n) ((type*) PeAlloc_allocz(sizeof(type) * (n)))
+void Pe_free(void* ptr);
 
 #endif  /* PEPPA_ALLOC_H_ */

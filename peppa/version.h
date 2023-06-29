@@ -21,8 +21,8 @@
   Pe_STRINGFY(PeVer_MINOR) "."  \
   Pe_STRINGFY(Pe_VERSION_PATCH)
 
-int PeVer_getVersion();
-const char* PeVer_getVersionString();
-const char* PeVer_getCopyRight();
+int Pe_getVersion();
+const char* Pe_getVersionString();
+const char* Pe_getCopyRight();
 
 #endif  /* PEPPA_VERSION_H_ */

@@ -9,9 +9,8 @@ extern "C" {
 
 #include <stdint.h>
 
-
-
-
+/* State */
+typedef struct Pe_State Pe_State;
 
 
 #ifdef __cplusplus

@@ -5,41 +5,43 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const PeAllocator kDefaultAllocator = {
+#include "peppa/macros.h"
+
+static const Pe_Alloc kAllocDefault = {
   malloc, realloc, free
 };
 
-static const PeAllocator* alloc = NULL;
+static const Pe_Alloc* alloc = NULL;
 
-const PeAllocator* PeAlloc_getAlloc() {
-  return alloc ? alloc : &kDefaultAllocator;
+const Pe_Alloc* Pe_getAlloc() {
+  return alloc ? alloc : &kAllocDefault;
 }
 
-void PeAlloc_setAlloc(const PeAllocator* allocator) {
+void Pe_setAlloc(const Pe_Alloc* allocator) {
   alloc = allocator;
 }
 
-void* PeAlloc_alloc(size_t size) {
-  return size > 0 ? PeAlloc_getAlloc()->alloc(size) : NULL;
+void* Pe_alloc(size_t size) {
+  return size > 0 ? Pe_getAlloc()->alloc(size) : NULL;
 }
 
-void* PeAlloc_allocz(size_t size) {
-  void* ptr = PeAlloc_alloc(size);
+void* Pe_allocz(size_t size) {
+  void* ptr = Pe_alloc(size);
   if (ptr)
     memset(ptr, 0, size);
   return ptr;
 }
 
-void* PeAlloc_realloc(void* ptr, size_t size) {
+void* Pe_realloc(void* ptr, size_t size) {
   if (ptr) {
     if (size > 0)
-      return PeAlloc_getAlloc()->realloc(ptr, size);
-    PeAlloc_free(ptr);
+      return Pe_getAlloc()->realloc(ptr, size);
+    Pe_free(ptr);
     return NULL;
   }
-  return PeAlloc_alloc(size);
+  return Pe_alloc(size);
 }
 
-void PeAlloc_free(void* ptr) {
-  PeAlloc_getAlloc()->free(ptr);
+void Pe_free(void* ptr) {
+  Pe_getAlloc()->free(ptr);
 }

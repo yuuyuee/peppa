@@ -1,6 +1,7 @@
 /* Copyright 2023 The Peppa Authors. */
 
 #include "peppa/error.h"
+
 #include "peppa/macros.h"
 
 /* XSI-compliant version of strerror_r */
@@ -15,7 +16,7 @@
 #include <string.h>
 #include <stdio.h>
 
-static const struct PeErrorEntry {
+static const struct Pe_ErrorEntry {
   int num;
   const char* str;
 } error_entries[] = {
@@ -23,7 +24,7 @@ static const struct PeErrorEntry {
 };
 
 int PeErr_stringError(int errnum, char* buf, size_t size) {
-  const struct PeErrorEntry* entry = NULL;
+  const struct Pe_ErrorEntry* entry = NULL;
   for (int i = 0; i < Pe_ARRAYSIZE(error_entries); ++i) {
     if (errnum == error_entries[i].num) {
       entry = &error_entries[i];

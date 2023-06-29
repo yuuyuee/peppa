@@ -5,15 +5,18 @@
 
 #include <stddef.h>
 
+#include "peppa/macros.h"
+
 typedef void* PeNode[2];
 
-#define PeList_offset(type, member) ((size_t)&(((type *) 0)->member))
+#define PeList_offset(type, member) \
+  Pe_CAST(size_t, &(Pe_CAST(type *, 0)->member))
 
 #define PeList_get(ptr, type, member) \
-  ((type *) (((void *) (ptr)) - PeList_offset(type, member)))
+  Pe_CAST(type *, Pe_CAST(char *, ptr) - PeList_offset(type, member))
 
-#define PeList_next(n) (*(PeNode**) &((*(n))[0]))
-#define PeList_prev(n) (*(PeNode**) &((*(n))[1]))
+#define PeList_next(n) *Pe_CAST(PeNode**, &((*(n))[0]))
+#define PeList_prev(n) *Pe_CAST(PeNode**, &((*(n))[1]))
 #define PeList_prevNext(n) (PeList_next(PeList_prev(n)))
 #define PeList_nextPrev(n) (PeList_prev(PeList_next(n)))
 
@@ -25,7 +28,7 @@ typedef void* PeNode[2];
 } while (0)
 
 #define PeList_empty(h)                               \
-  ((const PeNode *)(h) == (const PeNode *)PeList_next(h))
+  (Pe_CAST(const PeNode*, (h)) == Pe_CAST(const PeNode*, PeList_next(h)))
 
 #define PeList_foreach(n, h)                          \
   for ((n) = PeList_next(h); (n) != (h); (n) = PeList_next(n))

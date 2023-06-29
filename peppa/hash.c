@@ -6,8 +6,9 @@
 
 #include "peppa/codec.h"
 #include "peppa/alloc.h"
+#include "peppa/attributes.h"
 
-struct PeHashContext {
+struct PeHash_Context {
   uint32_t h1;
 #define Pe_CTX_SIZE 4
   uint8_t state[Pe_CTX_SIZE];
@@ -16,16 +17,16 @@ struct PeHashContext {
 };
 
 /* Allocate an hash context. */
-PeHashContext* PeHash_alloc() {
-  return PeAlloc_alloc(sizeof(PeHashContext));
+PeHash_Context* PeHash_alloc() {
+  return Pe_CAST(PeHash_Context*, Pe_alloc(sizeof(PeHash_Context)));
 }
 
 #define Pe_DFL_SEED UINT32_C(0xec4e6c89)
-void PeHash_init(PeHashContext* context) {
+void PeHash_init(PeHash_Context* context) {
   PeHash_init2(context, Pe_DFL_SEED);
 }
 
-void PeHash_init2(PeHashContext* context, uint32_t seed) {
+void PeHash_init2(PeHash_Context* context, uint32_t seed) {
   context->h1 = seed;
   context->pos = 0;
   context->len = 0;
@@ -36,22 +37,22 @@ void PeHash_init2(PeHashContext* context, uint32_t seed) {
 #define Pe_C1 UINT32_C(0xcc9e2d51)
 #define Pe_C2 UINT32_C(0x1b873593)
 
-static inline uint32_t PeHash_getK1(const uint8_t* ptr) {
-  uint32_t k1 = PeCodec_LOAD32(ptr);
+static PeAttr_ALWAYS_INLINE uint32_t PeHash_getK1(const uint8_t* ptr) {
+  uint32_t k1 = Pe_LOAD32(ptr);
   k1 *= Pe_C1;
   k1 = Pe_ROTL32(k1, 15);
   k1 *= Pe_C2;
   return k1;
 }
 
-static inline uint32_t PeHash_updateH1(uint32_t h1, uint32_t k1) {
+static PeAttr_ALWAYS_INLINE uint32_t PeHash_updateH1(uint32_t h1, uint32_t k1) {
   h1 ^= k1;
   h1 = Pe_ROTL32(h1, 13);
   h1 = h1 * 5 + UINT32_C(0xe6546b64);
   return h1;
 }
 
-static inline uint32_t PeHash_fmix32(uint32_t h1) {
+static PeAttr_ALWAYS_INLINE uint32_t PeHash_fmix32(uint32_t h1) {
   h1 ^= h1 >> 16;
   h1 *= UINT32_C(0x85ebca6b);
   h1 ^= h1 >> 13;
@@ -60,7 +61,7 @@ static inline uint32_t PeHash_fmix32(uint32_t h1) {
   return h1;
 }
 
-void PeHash_update(PeHashContext* context, const void* data, size_t len) {
+void PeHash_update(PeHash_Context* context, const void* data, size_t len) {
   const uint8_t* ptr = (const uint8_t*) data;
   uint32_t h1 = context->h1, k1;
   if (len <= 0) return;
@@ -92,7 +93,7 @@ void PeHash_update(PeHashContext* context, const void* data, size_t len) {
   }
 }
 
-uint32_t PeHash_finish(PeHashContext* context) {
+uint32_t PeHash_finish(PeHash_Context* context) {
   uint32_t h1 = context->h1;
 
   if (context->pos > 0) {
@@ -111,8 +112,8 @@ uint32_t PeHash_finish(PeHashContext* context) {
   return h1;
 }
 
-void PeHash_free(PeHashContext* context) {
-  PeAlloc_free(context);
+void PeHash_free(PeHash_Context* context) {
+  Pe_free(context);
 }
 
 uint32_t PeHash_getHashValue(const void* data, size_t len) {
@@ -120,7 +121,7 @@ uint32_t PeHash_getHashValue(const void* data, size_t len) {
 }
 
 uint32_t PeHash_getHashValue2(const void* data, size_t len, uint32_t seed) {
-  PeHashContext ctx;
+  PeHash_Context ctx;
   PeHash_init2(&ctx, seed);
   PeHash_update(&ctx, data, len);
   return PeHash_finish(&ctx);
@@ -136,7 +137,7 @@ int main(int argc, char* argv[]) {
   }
   printf("Input: %s\n", argv[1]);
 
-  PeHashContext ctx;
+  PeHash_Context ctx;
   PeHash_init2(&ctx, 42);
   for (int i = 1; i < argc; ++i)
     PeHash_update(&ctx, argv[i], strlen(argv[i]));

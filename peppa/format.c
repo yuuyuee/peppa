@@ -1,6 +1,7 @@
 /* Copyright 2023 The Peppa Authors. */
 
 #include "peppa/format.h"
+
 #include <stdio.h>
 
 size_t Pe_fmt(char* buf, size_t size, const char* fmt, ...) {

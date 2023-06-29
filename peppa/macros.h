@@ -12,7 +12,7 @@
 #define Pe_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define Pe_MIN3(a, b, c) Pe_MIN(Pe_MIN(a, b), c)
 
-#define Pe_SWAP(type, a, b) do {   \
+#define Pe_SWAP(type, a, b) do {  \
   type tmp = b;                   \
   b = a;                          \
   a = tmp;                        \
@@ -30,5 +30,6 @@
 
 #define Pe_ALIGIN(n, a) (((n) + (a) - 1) & ~((a) - 1))
 #define Pe_COMPARE(a, b) (((a) > (b)) - ((a) < (b)))
+#define Pe_CAST(t, p) ((t) (p))
 
 #endif  /* PEPPA_MACROS_H_ */
