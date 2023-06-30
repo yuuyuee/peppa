@@ -11,8 +11,8 @@
 #define YY_USER_INIT
 #define YY_USER_ACTION do { yycolumn += yyleng; } while (0);
 
-#define PP_BYPASS_UNTIL(c) while (input(yyscanner) != c) {}
-#define PP_HEX2INT(c) (isdigit(c) ? (c) - '0' : ((c) - 'A') + 10)
+#define Pe_BYPASS_UNTIL(c) while (input(yyscanner) != c) {}
+#define Pe_HEX2INT(c) (isdigit(c) ? (c) - '0' : ((c) - 'A') + 10)
 
 %}
 

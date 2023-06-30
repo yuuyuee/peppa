@@ -3,31 +3,32 @@
 /* %expect 0 */
 
 %code top {
-/* Emitted on top of the implementation file. */
+/* %code top */
 
 #include <stdio.h>
 #include <math.h>
 
 #include "peppa/lexer.h"
 #include "peppa/peppa.h"
+#include "peppa/object.h"
 
 }
 
 %code requires {
-/* Emitted in the header file, before the definition of YYSTYPE. */
+/* %code requires */
 #include <stdint.h>
 }
 
 %code provides {
-/* Emitted in the header file, after the definition of YYSTYPE. */
+/* %code provides */
 
-void pperror(YYLTYPE* loc, void*, const char* s);
+/////void pperror(YYLTYPE* loc, void*, const char* s);
 }
 
 %locations
 
-%define api.prefix {pp}
-%define api.token.prefix {TOK_}
+%define api.prefix {Pe_}
+%define api.token.prefix {Pe_TOK_}
 %define parse.error verbose
 %define api.pure full
 %parse-param {pp_state* pp}
@@ -40,12 +41,8 @@ void pperror(YYLTYPE* loc, void*, const char* s);
   double exp;
 }
 
-%code requires {
-  /* code requires 2 */
-}
-
 %code {
-  /* unqualified code */
+  /* %code unqualified */
 }
 
 %token <number> NUM

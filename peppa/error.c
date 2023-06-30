@@ -20,7 +20,7 @@ static const struct Pe_ErrorEntry {
   int num;
   const char* str;
 } error_entries[] = {
-
+  { PeErr_SYNTAX_ERR, "Syntax error" },
 };
 
 int PeErr_stringError(int errnum, char* buf, size_t size) {
