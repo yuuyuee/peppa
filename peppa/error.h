@@ -9,7 +9,7 @@
 int PeErr_stringError(int errnum, char* buf, size_t size);
 
 #define _PeErr_MKERRNUM(a, b, c, d)  \
-  ((a) | ((b) << 8) | ((c) << 16) | ((unsigned)(d) << 24))
+  (((unsigned)(a) << 24) | ((b) << 16) | ((c) << 8) | (d))
 
 # define PeErr_MKERRNUM(a, b, c, d) (_PeErr_MKERRNUM(a, b, c, d))
 
