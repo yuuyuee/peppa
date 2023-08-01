@@ -37,7 +37,7 @@ void PeHash_init2(PeHash_Context* context, uint32_t seed) {
 #define Pe_C1 UINT32_C(0xcc9e2d51)
 #define Pe_C2 UINT32_C(0x1b873593)
 
-static PeAttr_ALWAYS_INLINE uint32_t PeHash_getK1(const uint8_t* ptr) {
+static Pe_ALWAYS_INLINE uint32_t PeHash_getK1(const uint8_t* ptr) {
   uint32_t k1 = Pe_LOAD32(ptr);
   k1 *= Pe_C1;
   k1 = Pe_ROTL32(k1, 15);
@@ -45,14 +45,14 @@ static PeAttr_ALWAYS_INLINE uint32_t PeHash_getK1(const uint8_t* ptr) {
   return k1;
 }
 
-static PeAttr_ALWAYS_INLINE uint32_t PeHash_updateH1(uint32_t h1, uint32_t k1) {
+static Pe_ALWAYS_INLINE uint32_t PeHash_updateH1(uint32_t h1, uint32_t k1) {
   h1 ^= k1;
   h1 = Pe_ROTL32(h1, 13);
   h1 = h1 * 5 + UINT32_C(0xe6546b64);
   return h1;
 }
 
-static PeAttr_ALWAYS_INLINE uint32_t PeHash_fmix32(uint32_t h1) {
+static Pe_ALWAYS_INLINE uint32_t PeHash_fmix32(uint32_t h1) {
   h1 ^= h1 >> 16;
   h1 *= UINT32_C(0x85ebca6b);
   h1 ^= h1 >> 13;

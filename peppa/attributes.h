@@ -3,79 +3,79 @@
 #ifndef PEPPA_ATTRIBUTES_H_
 #define PEPPA_ATTRIBUTES_H_
 
-/* PeAttr_HAS_ATTRIBUTE() */
+/* Pe_HAS_ATTRIBUTE() */
 #if defined(__has_attribute)
-# define PeAttr_HAS_ATTRIBUTE(x) __has_attribute(x)
+# define Pe_HAS_ATTRIBUTE(x) __has_attribute(x)
 #else
-# define PeAttr_HAS_ATTRIBUTE(x) (0)
+# define Pe_HAS_ATTRIBUTE(x) (0)
 #endif
 
-/* PeAttr_HAS_BUILTIN() */
+/* Pe_HAS_BUILTIN() */
 #if defined(__has_builtin)
-# define PeAttr_HAS_BUILTIN(x) __has_builtin(x)
+# define Pe_HAS_BUILTIN(x) __has_builtin(x)
 #else
-# define PeAttr_HAS_BUILTIN(x) 0
+# define Pe_HAS_BUILTIN(x) 0
 #endif
 
-/* PeAttr_ALWAYS_INLINE() */
+/* Pe_ALWAYS_INLINE() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_ATTRIBUTE(always_inline)
-# define PeAttr_ALWAYS_INLINE inline __attribute__((always_inline))
+    Pe_HAS_ATTRIBUTE(always_inline)
+# define Pe_ALWAYS_INLINE inline __attribute__((always_inline))
 #else
-# define PeAttr_ALWAYS_INLINE inline
+# define Pe_ALWAYS_INLINE inline
 #endif
 
-/* PeAttr_NORETURN() */
+/* Pe_NORETURN() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_ATTRIBUTE(noreturn)
-# define PeAttr_NORETURN __attribute__((noreturn))
+    Pe_HAS_ATTRIBUTE(noreturn)
+# define Pe_NORETURN __attribute__((noreturn))
 #else
-# define PeAttr_NORETURN
+# define Pe_NORETURN
 #endif
 
-/* PeAttr_DEPRECATED() */
+/* Pe_DEPRECATED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_ATTRIBUTE(deprecated)
-# define PeAttr_DEPRECATED(...) __attribute__((deprecated(__VA_ARGS__)))
+    Pe_HAS_ATTRIBUTE(deprecated)
+# define Pe_DEPRECATED(...) __attribute__((deprecated(__VA_ARGS__)))
 #else
-# define PeAttr_DEPRECATED(...)
+# define Pe_DEPRECATED(...)
 #endif
 
-/* PeAttr_MAYBE_UNUSED() */
+/* Pe_MAYBE_UNUSED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_ATTRIBUTE(unused)
-# define PeAttr_MAYBE_UNUSED __attribute__((unused))
+    Pe_HAS_ATTRIBUTE(unused)
+# define Pe_MAYBE_UNUSED __attribute__((unused))
 #else
-# define PeAttr_MAYBE_UNUSED
+# define Pe_MAYBE_UNUSED
 #endif
 
-/* PeAttr_NODISCARD() */
+/* Pe_NODISCARD() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_ATTRIBUTE(warn_unused_result)
-# define PeAttr_NODISCARD __attribute__((warn_unused_result))
+    Pe_HAS_ATTRIBUTE(warn_unused_result)
+# define Pe_NODISCARD __attribute__((warn_unused_result))
 #else
-# define PeAttr_NODISCARD
+# define Pe_NODISCARD
 #endif
 
-/* PeAttr_ALIGNED() */
+/* Pe_ALIGNED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_ATTRIBUTE(aligned)
-# define PeAttr_ALIGNED(n) __attribute__((aligned(n)))
+    Pe_HAS_ATTRIBUTE(aligned)
+# define Pe_ALIGNED(n) __attribute__((aligned(n)))
 #else
-# define PeAttr_ALIGNED(n)
+# define Pe_ALIGNED(n)
 #endif
 
-/* PeAttr_PACKED() */
+/* Pe_PACKED() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_ATTRIBUTE(packed)
-# define PeAttr_PACKED __attribute__((packed))
+    Pe_HAS_ATTRIBUTE(packed)
+# define Pe_PACKED __attribute__((packed))
 #else
-# define PeAttr_PACKED
+# define Pe_PACKED
 #endif
 
-/* PeAttr_LIKELY(), PeAttr_UNLIKELY() */
+/* Pe_LIKELY(), Pe_UNLIKELY() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
-    PeAttr_HAS_BUILTIN(__builtin_expect)
+    Pe_HAS_BUILTIN(__builtin_expect)
 # define Pe_LIKELY(x) __builtin_expect(false || (x), true)
 # define Pe_UNLIKELY(x) __builtin_expect(false || (x), false)
 #else
