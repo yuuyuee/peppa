@@ -2,10 +2,19 @@
 
 #include "peppa/peppa.h"
 
-// #include <stdio.h>
-// #include <stdlib.h>
+/* Version */
 
+int Pe_getVersion() {
+  return Pe_VERSION;
+}
 
+const char* Pe_getVersionString() {
+  return Pe_VERSION_S;
+}
+
+const char* Pe_getCopyRight() {
+  return "Copyright 2023 The Peppa Authors";
+}
 
 // int pp_parse(const char* fname) {
 
