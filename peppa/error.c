@@ -23,7 +23,7 @@ static const struct Pe_ErrorEntry {
   { PeErr_SYNTAX_ERR, "Syntax error" },
 };
 
-int PeErr_stringError(int errnum, char* buf, size_t size) {
+int Pe_stringError(int errnum, char* buf, size_t size) {
   const struct Pe_ErrorEntry* entry = NULL;
   for (int i = 0; i < Pe_ARRAYSIZE(error_entries); ++i) {
     if (errnum == error_entries[i].num) {
@@ -41,3 +41,5 @@ int PeErr_stringError(int errnum, char* buf, size_t size) {
   }
   return ret;
 }
+
+void _Pe_Error(const char* fmt, ...);

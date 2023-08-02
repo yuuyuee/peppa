@@ -6,29 +6,31 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct PeHash_Context PeHash_Context;
+typedef uint32_t Pe_HashValue;
+typedef struct Pe_HashContext Pe_HashContext;
 
 /* Allocate an hash context. */
-PeHash_Context* PeHash_alloc();
+Pe_HashContext* PeHashContext_alloc();
 
 /* Initialize or reinitialize an hash context. */
-void PeHash_init(PeHash_Context* context);
+void PeHashContext_init(Pe_HashContext* context);
 
 /* Initialize or reinitialize an hash context with a seed. */
-void PeHash_init2(PeHash_Context* context, uint32_t seed);
+void PeHashContext_init2(Pe_HashContext* context, Pe_HashValue seed);
 
 /* Update hash context with new data. */
-void PeHash_update(PeHash_Context* context, const void* data, size_t len);
+void PeHashContext_update(Pe_HashContext* context,
+                          const void* data, size_t len);
 
 /* Finish hashing and returns hash value. */
-uint32_t PeHash_finish(PeHash_Context* context);
+Pe_HashValue PeHashContext_finish(Pe_HashContext* context);
 
 /* Free an hash context. */
-void PeHash_free(PeHash_Context* context);
+void PeHashContext_free(Pe_HashContext* context);
 
 /* Wrapped functions */
 
-uint32_t PeHash_getHashValue(const void* data, size_t len);
-uint32_t PeHash_getHashValue2(const void* data, size_t len, uint32_t seed);
+Pe_HashValue Pe_getHashValue(const void* data, size_t len);
+Pe_HashValue Pe_getHashValue2(const void* data, size_t len, Pe_HashValue seed);
 
 #endif  /* PEPPA_HASH_H_ */

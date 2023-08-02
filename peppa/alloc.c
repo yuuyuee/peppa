@@ -5,20 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "peppa/macros.h"
-
 static const Pe_Alloc kAllocDefault = {
-  malloc, realloc, free
+  malloc, free
 };
 
-static const Pe_Alloc* alloc = NULL;
+static const Pe_Alloc* _Pe_alloc = NULL;
 
 const Pe_Alloc* Pe_getAlloc() {
-  return alloc ? alloc : &kAllocDefault;
+  return _Pe_alloc ? _Pe_alloc : &kAllocDefault;
 }
 
-void Pe_setAlloc(const Pe_Alloc* allocator) {
-  alloc = allocator;
+void Pe_setAlloc(const Pe_Alloc* alloc) {
+  _Pe_alloc = alloc;
 }
 
 void* Pe_alloc(size_t size) {
@@ -30,16 +28,6 @@ void* Pe_allocz(size_t size) {
   if (ptr)
     memset(ptr, 0, size);
   return ptr;
-}
-
-void* Pe_realloc(void* ptr, size_t size) {
-  if (ptr) {
-    if (size > 0)
-      return Pe_getAlloc()->realloc(ptr, size);
-    Pe_free(ptr);
-    return NULL;
-  }
-  return Pe_alloc(size);
 }
 
 void Pe_free(void* ptr) {
