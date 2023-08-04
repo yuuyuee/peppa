@@ -5,28 +5,30 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "peppa/error.h"
+
 static const Pe_Alloc kAllocDefault = {
   malloc, free
 };
 
-static const Pe_Alloc* _Pe_alloc = NULL;
+static const Pe_Alloc* _alloc = NULL;
 
 const Pe_Alloc* Pe_getAlloc() {
-  return _Pe_alloc ? _Pe_alloc : &kAllocDefault;
+  return _alloc ? _alloc : &kAllocDefault;
 }
 
 void Pe_setAlloc(const Pe_Alloc* alloc) {
-  _Pe_alloc = alloc;
+  _alloc = alloc;
 }
 
 void* Pe_alloc(size_t size) {
-  return size > 0 ? Pe_getAlloc()->alloc(size) : NULL;
+  PE_CHECK2(size > 0);
+  return Pe_getAlloc()->alloc(size);
 }
 
 void* Pe_allocz(size_t size) {
   void* ptr = Pe_alloc(size);
-  if (ptr)
-    memset(ptr, 0, size);
+  memset(ptr, 0, size);
   return ptr;
 }
 

@@ -58,11 +58,14 @@ void _Pe_error(const char* file, int line, const char* fun,
 
 #define Pe_BSZ 1024
   char buf[Pe_BSZ];
-  size_t n =
+  size_t len =
       Pe_format(buf, Pe_BSZ, "Error on the %s:%d <%s>: ", file, line, fun);
 
   va_list ap;
   va_start(ap, fmt);
-  Pe_formatv(buf + n, Pe_BSZ - n, fmt, ap);
+  len += Pe_formatv(buf + len, Pe_BSZ - len, fmt, ap);
   va_end(ap);
+
+  fwrite(buf, len, 1, stderr);
+  fflush(stderr);
 }

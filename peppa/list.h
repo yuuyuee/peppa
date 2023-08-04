@@ -7,7 +7,7 @@
 
 #include "peppa/macros.h"
 
-typedef void* PeNode[2];
+typedef void* Pe_Node[2];
 
 #define PeList_offset(type, member) \
   Pe_CAST(size_t, &(Pe_CAST(type *, 0)->member))
@@ -15,8 +15,8 @@ typedef void* PeNode[2];
 #define PeList_get(ptr, type, member) \
   Pe_CAST(type *, Pe_CAST(char *, ptr) - PeList_offset(type, member))
 
-#define PeList_next(n) *Pe_CAST(PeNode**, &((*(n))[0]))
-#define PeList_prev(n) *Pe_CAST(PeNode**, &((*(n))[1]))
+#define PeList_next(n) *Pe_CAST(Pe_Node**, &((*(n))[0]))
+#define PeList_prev(n) *Pe_CAST(Pe_Node**, &((*(n))[1]))
 #define PeList_prevNext(n) (PeList_next(PeList_prev(n)))
 #define PeList_nextPrev(n) (PeList_prev(PeList_next(n)))
 
@@ -28,7 +28,7 @@ typedef void* PeNode[2];
 } while (0)
 
 #define PeList_empty(h)                               \
-  (Pe_CAST(const PeNode*, (h)) == Pe_CAST(const PeNode*, PeList_next(h)))
+  (Pe_CAST(const Pe_Node*, (h)) == Pe_CAST(const Pe_Node*, PeList_next(h)))
 
 #define PeList_foreach(n, h)                          \
   for ((n) = PeList_next(h); (n) != (h); (n) = PeList_next(n))
@@ -72,7 +72,7 @@ typedef void* PeNode[2];
   if (PeList_empty(h)) {                              \
     PeList_init(h2);                                  \
   } else {                                            \
-    PeNode* n = PeList_head(h);                       \
+    Pe_Node* n = PeList_head(h);                       \
     PeList_split(h, n, h2);                           \
   }                                                   \
 } while (0)

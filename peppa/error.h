@@ -19,11 +19,11 @@
 const char* Pe_strError(int errnum, char* buf, size_t size);
 
 #ifndef NDEBUG
-# define PE_CHECK(cond, fmt, ...) do {                            \
-  if (Pe_UNLIKELY(!(cond))) {                                     \
-    _Pe_error(__FILE__, __LINE__, __func__, fmt, ## __VA_ARGS__); \
-    abort();                                                      \
-  }                                                               \
+# define PE_CHECK(cond, fmt, ...) do {                                  \
+  if (Pe_UNLIKELY(!(cond))) {                                           \
+    _Pe_error(__FILE__, __LINE__, __func__, fmt "\n", ## __VA_ARGS__);  \
+    abort();                                                            \
+  }                                                                     \
 } while (0)
 
 # define PE_CHECK2(cond) PE_CHECK(cond, #cond)
