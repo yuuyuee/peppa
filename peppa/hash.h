@@ -6,11 +6,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "peppa/attributes.h"
+
 typedef uint32_t Pe_HashValue;
 typedef struct Pe_HashContext Pe_HashContext;
 
 /* Allocate an hash context. */
-Pe_HashContext* PeHashContext_alloc();
+Pe_HashContext* PeHashContext_alloc() Pe_NODISCARD;
 
 /* Initialize or reinitialize an hash context. */
 void PeHashContext_init(Pe_HashContext* context);

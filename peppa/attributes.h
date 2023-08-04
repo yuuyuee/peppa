@@ -76,8 +76,8 @@
 /* Pe_LIKELY(), Pe_UNLIKELY() */
 #if (defined(__GNUC__) && !defined(__clang__)) || \
     Pe_HAS_BUILTIN(__builtin_expect)
-# define Pe_LIKELY(x) __builtin_expect(false || (x), true)
-# define Pe_UNLIKELY(x) __builtin_expect(false || (x), false)
+# define Pe_LIKELY(x) __builtin_expect(!!(x), 1)
+# define Pe_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #else
 # define Pe_LIKELY(x) (x)
 # define Pe_UNLIKELY(x) (x)

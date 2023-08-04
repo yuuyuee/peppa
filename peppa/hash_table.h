@@ -4,6 +4,7 @@
 #define PEPPA_HASH_TABLE_H_
 
 #include "peppa/hash.h"
+#include "peppa/attributes.h"
 
 typedef struct Pe_HashTableTraits {
   /* Compares the objects and returns 0 if it is one in the same. */
@@ -18,7 +19,7 @@ typedef struct Pe_HashTableTraits {
 
 typedef struct Pe_HashTable Pe_HashTable;
 
-Pe_HashTable* PeHashTable_alloc();
+Pe_HashTable* PeHashTable_alloc() Pe_NODISCARD;
 
 void PeHashTable_init(Pe_HashTable* table, Pe_HashTableTraits traits);
 
