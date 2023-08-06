@@ -7,12 +7,8 @@
 
 struct Pe_Element {
   void* value;
-  Pe_HashValue hash_value;
+  uint32_t hash_value;
   Pe_Node node;
-};
-
-typedef struct Pe_Bucket {
-
 };
 
 struct Pe_HashTable {

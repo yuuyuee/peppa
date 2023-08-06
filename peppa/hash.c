@@ -5,17 +5,7 @@
 #include <string.h>
 
 #include "peppa/codec.h"
-
-#define Pe_DFL_SEED UINT32_C(0xec4e6c89)
-void PeHashContext_init(Pe_HashContext* context) {
-  PeHashContext_init2(context, Pe_DFL_SEED);
-}
-
-void PeHashContext_init2(Pe_HashContext* context, uint32_t seed) {
-  context->h1 = seed;
-  context->pos = 0;
-  context->len = 0;
-}
+#include "peppa/attributes.h"
 
 #define _Pe_ROTL(x, r, n) (((x) << (r)) | ((x) >> ((n) - (r))))
 #define Pe_ROTL32(x, r) (r == 0 ? x : _Pe_ROTL(x, r, 32))
@@ -47,6 +37,17 @@ uint32_t PeHash_fmix32(uint32_t h1) {
   h1 *= UINT32_C(0xc2b2ae35);
   h1 ^= h1 >> 16;
   return h1;
+}
+
+#define Pe_DFL_SEED UINT32_C(0xec4e6c89)
+void PeHashContext_init(Pe_HashContext* context) {
+  PeHashContext_init2(context, Pe_DFL_SEED);
+}
+
+void PeHashContext_init2(Pe_HashContext* context, uint32_t seed) {
+  context->h1 = seed;
+  context->pos = 0;
+  context->len = 0;
 }
 
 void PeHashContext_update(Pe_HashContext* context,
