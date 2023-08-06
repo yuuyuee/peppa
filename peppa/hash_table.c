@@ -11,8 +11,6 @@ struct Pe_Element {
   Pe_Node node;
 };
 
-
-
 typedef struct Pe_Bucket {
 
 };

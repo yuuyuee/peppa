@@ -8,8 +8,13 @@
 
 #include "peppa/attributes.h"
 
-typedef uint32_t Pe_HashValue;
-typedef struct Pe_HashContext Pe_HashContext;
+typedef struct  {
+  uint32_t h1;
+#define Pe_STATE_SIZE 4
+  uint8_t state[Pe_STATE_SIZE];
+  int pos;
+  uint64_t len;
+} Pe_HashContext;
 
 /* Allocate an hash context. */
 Pe_HashContext* PeHashContext_alloc() Pe_NODISCARD;
@@ -18,21 +23,21 @@ Pe_HashContext* PeHashContext_alloc() Pe_NODISCARD;
 void PeHashContext_init(Pe_HashContext* context);
 
 /* Initialize or reinitialize an hash context with a seed. */
-void PeHashContext_init2(Pe_HashContext* context, Pe_HashValue seed);
+void PeHashContext_init2(Pe_HashContext* context, uint32_t seed);
 
 /* Update hash context with new data. */
 void PeHashContext_update(Pe_HashContext* context,
                           const void* data, size_t len);
 
 /* Finish hashing and returns hash value. */
-Pe_HashValue PeHashContext_finish(Pe_HashContext* context);
+uint32_t PeHashContext_finish(Pe_HashContext* context);
 
 /* Free an hash context. */
 void PeHashContext_free(Pe_HashContext* context);
 
 /* Wrapped functions */
 
-Pe_HashValue Pe_getHashValue(const void* data, size_t len);
-Pe_HashValue Pe_getHashValue2(const void* data, size_t len, Pe_HashValue seed);
+uint32_t Pe_getHashValue(const void* data, size_t len);
+uint32_t Pe_getHashValue2(const void* data, size_t len, uint32_t seed);
 
 #endif  /* PEPPA_HASH_H_ */
