@@ -5,7 +5,32 @@
 #include <string.h>
 
 #include "peppa/codec.h"
-#include "peppa/attributes.h"
+#include "peppa/alloc.h"
+#include "peppa/macros.h"
+
+struct Pe_HashContext {
+  uint32_t h1;
+#define Pe_CTX_SIZE 4
+  uint8_t state[Pe_CTX_SIZE];
+  int pos;
+  uint64_t len;
+};
+
+/* Allocate an hash context. */
+Pe_HashContext* PeHashContext_alloc() {
+  return Pe_CAST(Pe_HashContext*, Pe_alloc(sizeof(Pe_HashContext)));
+}
+
+#define Pe_DFL_SEED UINT32_C(0xec4e6c89)
+void PeHashContext_init(Pe_HashContext* context) {
+  PeHashContext_init2(context, Pe_DFL_SEED);
+}
+
+void PeHashContext_init2(Pe_HashContext* context, uint32_t seed) {
+  context->h1 = seed;
+  context->pos = 0;
+  context->len = 0;
+}
 
 #define _Pe_ROTL(x, r, n) (((x) << (r)) | ((x) >> ((n) - (r))))
 #define Pe_ROTL32(x, r) (r == 0 ? x : _Pe_ROTL(x, r, 32))
@@ -39,17 +64,6 @@ uint32_t PeHash_fmix32(uint32_t h1) {
   return h1;
 }
 
-#define Pe_DFL_SEED UINT32_C(0xec4e6c89)
-void PeHashContext_init(Pe_HashContext* context) {
-  PeHashContext_init2(context, Pe_DFL_SEED);
-}
-
-void PeHashContext_init2(Pe_HashContext* context, uint32_t seed) {
-  context->h1 = seed;
-  context->pos = 0;
-  context->len = 0;
-}
-
 void PeHashContext_update(Pe_HashContext* context,
                           const void* data, size_t len) {
   if (len <= 0) return;
@@ -59,7 +73,7 @@ void PeHashContext_update(Pe_HashContext* context,
   context->len += len;
 
   if (context->pos > 0) {
-    while (context->pos < Pe_STATE_SIZE) {
+    while (context->pos < Pe_CTX_SIZE) {
       context->state[context->pos++] = *ptr++;
       if (--len <= 0)
         return;
@@ -69,12 +83,12 @@ void PeHashContext_update(Pe_HashContext* context,
     context->pos = 0;
   }
 
-  int nblock = len / Pe_STATE_SIZE;
+  int nblock = len / Pe_CTX_SIZE;
   for (; nblock > 0; --nblock) {
     k1 = PeHash_getK1(ptr);
     h1 = PeHash_updateH1(h1, k1);
-    ptr += Pe_STATE_SIZE;
-    len -= Pe_STATE_SIZE;
+    ptr += Pe_CTX_SIZE;
+    len -= Pe_CTX_SIZE;
   }
 
   context->h1 = h1;
@@ -89,7 +103,7 @@ uint32_t PeHashContext_finish(Pe_HashContext* context) {
   uint32_t h1 = context->h1;
 
   if (context->pos > 0) {
-    memset(context->state + context->pos, 0, Pe_STATE_SIZE - context->pos);
+    memset(context->state + context->pos, 0, Pe_CTX_SIZE - context->pos);
     /* There is different from MurmurHash3 x86_32. */
     uint32_t k1 = PeHash_getK1(context->state);
     k1 *= Pe_C1;
@@ -102,6 +116,10 @@ uint32_t PeHashContext_finish(Pe_HashContext* context) {
   h1 = PeHash_fmix32(h1);
 
   return h1;
+}
+
+void PeHashContext_free(Pe_HashContext* context) {
+  Pe_free(context);
 }
 
 uint32_t Pe_getHashValue(const void* data, size_t len) {
