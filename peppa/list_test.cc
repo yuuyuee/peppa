@@ -11,7 +11,7 @@ namespace {
 
 struct Data {
   int value;
-  Pe_Node node;
+  Pe_ListNode node;
 
   static int kConstructCount;
   static int kDestructCount;
@@ -22,27 +22,27 @@ struct Data {
 int Data::kConstructCount = 0;
 int Data::kDestructCount = 0;
 
-std::vector<int> RingToVector(Pe_Node* h) {
+std::vector<int> RingToVector(Pe_ListNode* h) {
   std::vector<int> vec;
-  Pe_Node* n;
+  Pe_ListNode* n;
   PeList_foreach(n, h) {
-    Data* p = PeList_get(n, Data, node);
+    Data* p = Pe_CONTAINER_OF(n, Data, node);
     vec.push_back(p->value);
   }
   return vec;
 }
 
-void FreeList(Pe_Node* h) {
+void FreeList(Pe_ListNode* h) {
   while (!PeList_empty(h)) {
-    Pe_Node* n = PeList_next(h);
+    Pe_ListNode* n = PeList_next(h);
     PeList_remove(n);
-    Data* p = PeList_get(n, Data, node);
+    Data* p = Pe_CONTAINER_OF(n, Data, node);
     delete p;
   }
 }
 
 TEST(RingTest, InsertHead) {
-  Pe_Node h;
+  Pe_ListNode h;
   Data* p = nullptr;
 
   PeList_init(&h);
@@ -54,10 +54,10 @@ TEST(RingTest, InsertHead) {
     PeList_insertHead(&h, &p->node);
   }
 
-  Pe_Node* c;
+  Pe_ListNode* c;
   int index = 10;
   PeList_foreach(c, &h) {
-    Data* p = PeList_get(c, Data, node);
+    Data* p = Pe_CONTAINER_OF(c, Data, node);
     EXPECT_EQ(p->value, --index);
   }
 
@@ -66,7 +66,7 @@ TEST(RingTest, InsertHead) {
 }
 
 TEST(RingTest, InsertTail) {
-  Pe_Node h;
+  Pe_ListNode h;
   Data* p = nullptr;
 
   PeList_init(&h);
@@ -78,10 +78,10 @@ TEST(RingTest, InsertTail) {
     PeList_insertTail(&h, &p->node);
   }
 
-  Pe_Node* c;
+  Pe_ListNode* c;
   int index = -1;
   PeList_foreach(c, &h) {
-    Data* p = PeList_get(c, Data, node);
+    Data* p = Pe_CONTAINER_OF(c, Data, node);
     EXPECT_EQ(p->value, ++index);
   }
 
@@ -90,7 +90,7 @@ TEST(RingTest, InsertTail) {
 }
 
 TEST(RingTest, ADD) {
-  Pe_Node h1, h2;
+  Pe_ListNode h1, h2;
   Data* p = nullptr;
   std::vector<int> vec1, vec2, vec3;
 
@@ -125,7 +125,7 @@ TEST(RingTest, ADD) {
 }
 
 TEST(RingTest, SplitMove) {
-  Pe_Node h1, h2, h3, h4;
+  Pe_ListNode h1, h2, h3, h4;
   Data* p = nullptr;
 
   PeList_init(&h1);
@@ -146,8 +146,8 @@ TEST(RingTest, SplitMove) {
 
   // test PeList_split
   // h1 -> 0, 2, 4
-  Pe_Node* n = PeList_next(PeList_next(&h1));
-  p = PeList_get(n, Data, node);
+  Pe_ListNode* n = PeList_next(PeList_next(&h1));
+  p = Pe_CONTAINER_OF(n, Data, node);
   EXPECT_EQ(p->value, 2);
   PeList_split(&h1, n, &h3);
   std::vector<int> exp1{0};

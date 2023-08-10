@@ -32,4 +32,14 @@
 #define Pe_COMPARE(a, b) (((a) > (b)) - ((a) < (b)))
 #define Pe_CAST(t, p) ((t) (p))
 
+#ifdef offsetof
+# define Pe_OFFSETOF(type, member) offsetof(type, member)
+#else
+# define Pe_OFFSETOF(type, member) \
+  Pe_CAST(size_t, &(Pe_CAST(type*, 0)->member))
+#endif
+
+#define Pe_CONTAINER_OF(ptr, type, member) \
+  Pe_CAST(type *, Pe_CAST(char *, ptr) - Pe_OFFSETOF(type, member))
+
 #endif  /* PEPPA_MACROS_H_ */
