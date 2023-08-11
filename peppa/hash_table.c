@@ -68,13 +68,29 @@ static const uint32_t kPrimeList[] = {
 
 static const size_t kPrimeListSize = Pe_ARRAYSIZE(kPrimeList);
 
-static inline float PeHashTable_loadFactor(Pe_HashTable* table) {
+static inline
+float PeHashTable_loadFactor(Pe_HashTable* table) {
   return table->load_factor;
 }
 
-static inline size_t Pe_getNumberBucket(
-    size_t num_elts, long double load_factor) {
+static inline
+size_t Pe_getBucket(size_t num_elts, long double load_factor) {
   return ceil(num_elts / load_factor);
+}
+
+static inline
+size_t Pe_hashing(size_t num, size_t den) {
+#ifdef PE_MOD_HASH
+  /* For modulo range hashing, use division to fold a large */
+  return
+#endif
+}
+
+
+/* Return a bucket size no smaller than n. */
+static inline
+size_t Pe_getNextBucket(size_t n) {
+
 }
 
 Pe_HashTable* PeHashTable_alloc() {
