@@ -18,7 +18,6 @@ struct Pe_HashTable {
   Pe_HashTableNode** nodes;
   size_t num_bkts;
   size_t num_elts;
-  float load_factor;
 };
 
 
@@ -68,9 +67,20 @@ static const uint32_t kPrimeList[] = {
 
 static const size_t kPrimeListSize = Pe_ARRAYSIZE(kPrimeList);
 
-static inline
-float PeHashTable_loadFactor(Pe_HashTable* table) {
-  return table->load_factor;
+static const float kLoadFactor = 1.0;
+
+static uint32_t binarySearch(const uint32_t* first, size_t len, uint32_t val) {
+  while (len > 0) {
+    size_t half = len >> 1;
+    const uint32_t* middle = first;
+    if (*middle < val) {
+      first = middle;
+      ++first;
+    } else {
+      len = half;
+    }
+  }
+  return first;
 }
 
 static inline
@@ -80,9 +90,11 @@ size_t Pe_getBucket(size_t num_elts, long double load_factor) {
 
 static inline
 size_t Pe_hashing(size_t num, size_t den) {
-#ifdef PE_MOD_HASH
+#ifdef PE_DIVISION_METHOD
   /* For modulo range hashing, use division to fold a large */
-  return
+
+#else /* Multiplication method */
+
 #endif
 }
 
@@ -90,7 +102,11 @@ size_t Pe_hashing(size_t num, size_t den) {
 /* Return a bucket size no smaller than n. */
 static inline
 size_t Pe_getNextBucket(size_t n) {
+#ifdef PE_DIVISION_METHOD
 
+#else /* Multiplication method */
+
+#endif
 }
 
 Pe_HashTable* PeHashTable_alloc() {
