@@ -38,7 +38,7 @@ void PeHashContext_init2(Pe_HashContext* context, uint32_t seed) {
 #define Pe_C2 UINT32_C(0x1b873593)
 
 static Pe_ALWAYS_INLINE
-uint32_t PeHash_getK1(const uint8_t* ptr) {
+uint32_t getK1(const uint8_t* ptr) {
   uint32_t k1 = Pe_LOAD32(ptr);
   k1 *= Pe_C1;
   k1 = Pe_ROTL32(k1, 15);
@@ -47,7 +47,7 @@ uint32_t PeHash_getK1(const uint8_t* ptr) {
 }
 
 static Pe_ALWAYS_INLINE
-uint32_t PeHash_updateH1(uint32_t h1, uint32_t k1) {
+uint32_t updateH1(uint32_t h1, uint32_t k1) {
   h1 ^= k1;
   h1 = Pe_ROTL32(h1, 13);
   h1 = h1 * 5 + UINT32_C(0xe6546b64);
@@ -55,7 +55,7 @@ uint32_t PeHash_updateH1(uint32_t h1, uint32_t k1) {
 }
 
 static Pe_ALWAYS_INLINE
-uint32_t PeHash_fmix32(uint32_t h1) {
+uint32_t fmix32(uint32_t h1) {
   h1 ^= h1 >> 16;
   h1 *= UINT32_C(0x85ebca6b);
   h1 ^= h1 >> 13;
@@ -78,15 +78,15 @@ void PeHashContext_update(Pe_HashContext* context,
       if (--len <= 0)
         return;
     }
-    k1 = PeHash_getK1(context->state);
-    h1 = PeHash_updateH1(h1, k1);
+    k1 = getK1(context->state);
+    h1 = updateH1(h1, k1);
     context->pos = 0;
   }
 
   int nblock = len / Pe_CTX_SIZE;
   for (; nblock > 0; --nblock) {
-    k1 = PeHash_getK1(ptr);
-    h1 = PeHash_updateH1(h1, k1);
+    k1 = getK1(ptr);
+    h1 = updateH1(h1, k1);
     ptr += Pe_CTX_SIZE;
     len -= Pe_CTX_SIZE;
   }
@@ -105,7 +105,7 @@ uint32_t PeHashContext_finish(Pe_HashContext* context) {
   if (context->pos > 0) {
     memset(context->state + context->pos, 0, Pe_CTX_SIZE - context->pos);
     /* There is different from MurmurHash3 x86_32. */
-    uint32_t k1 = PeHash_getK1(context->state);
+    uint32_t k1 = getK1(context->state);
     k1 *= Pe_C1;
     k1 = Pe_ROTL32(k1, 15);
     k1 *= Pe_C2;
@@ -113,7 +113,7 @@ uint32_t PeHashContext_finish(Pe_HashContext* context) {
   }
 
   h1 ^= context->len;
-  h1 = PeHash_fmix32(h1);
+  h1 = fmix32(h1);
 
   return h1;
 }

@@ -15,9 +15,8 @@ typedef struct Pe_HashTableTraits {
   /* Free an element. */
   void (*free)(void* elt);
 
-  /* Compares the two keys "x" and "y", returns nonzero ingeger if
-   * it is equality. */
-  int (*equal)(const void* x, const void* y);
+  /* Compares the two keys of "x" and "y", returns zero if it is equality. */
+  int (*compare)(const void* x, const void* y);
 
   /* Hash function. */
   uint32_t (*hash)(const void* key);
@@ -29,7 +28,8 @@ typedef struct Pe_HashTable Pe_HashTable;
 Pe_HashTable* PeHashTable_alloc() Pe_NODISCARD;
 
 /* Initialize an hash table with the traits. */
-void PeHashTable_init(Pe_HashTable* table, Pe_HashTableTraits traits);
+void PeHashTable_init(Pe_HashTable* table, Pe_HashTableTraits traits, size_t n);
+void PeHashTable_init2(Pe_HashTable* table, Pe_HashTableTraits traits);
 
 /* Add an element into the hash table. the element will be override
  * if the hash table does already contain an element with key equivalent

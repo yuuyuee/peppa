@@ -7,125 +7,181 @@
 #include "peppa/alloc.h"
 #include "peppa/macros.h"
 
+#define PE_DIVISION_METHOD 1
+
 typedef struct Pe_HashTableNode {
   void* elt;
-  uint32_t hash;
+  uint32_t hash_code;
   Pe_HashTableNode* next;
 } Pe_HashTableNode;
 
 struct Pe_HashTable {
   Pe_HashTableTraits traits;
-  Pe_HashTableNode** nodes;
+  Pe_HashTableNode** bkts;
   size_t num_bkts;
   size_t num_elts;
 };
 
-
-
-static const uint32_t kPrimeList[] = {
-  2u, 3u, 5u, 7u, 11u, 13u, 17u, 19u, 23u, 29u, 31u,
-  37u, 41u, 43u, 47u, 53u, 59u, 61u, 67u, 71u, 73u, 79u,
-  83u, 89u, 97u, 103u, 109u, 113u, 127u, 137u, 139u, 149u,
-  157u, 167u, 179u, 193u, 199u, 211u, 227u, 241u, 257u,
-  277u, 293u, 313u, 337u, 359u, 383u, 409u, 439u, 467u,
-  503u, 541u, 577u, 619u, 661u, 709u, 761u, 823u, 887u,
-  953u, 1031u, 1109u, 1193u, 1289u, 1381u, 1493u, 1613u,
-  1741u, 1879u, 2029u, 2179u, 2357u, 2549u, 2753u, 2971u,
-  3209u, 3469u, 3739u, 4027u, 4349u, 4703u, 5087u, 5503u,
-  5953u, 6427u, 6949u, 7517u, 8123u, 8783u, 9497u, 10273u,
-  11113u, 12011u, 12983u, 14033u, 15173u, 16411u, 17749u,
-  19183u, 20753u, 22447u, 24281u, 26267u, 28411u, 30727u,
-  33223u, 35933u, 38873u, 42043u, 45481u, 49201u, 53201u,
-  57557u, 62233u, 67307u, 72817u, 78779u, 85229u, 92203u,
-  99733u, 107897u, 116731u, 126271u, 136607u, 147793u,
-  159871u, 172933u, 187091u, 202409u, 218971u, 236897u,
-  256279u, 277261u, 299951u, 324503u, 351061u, 379787u,
-  410857u, 444487u, 480881u, 520241u, 562841u, 608903u,
-  658753u, 712697u, 771049u, 834181u, 902483u, 976369u,
-  1056323u, 1142821u, 1236397u, 1337629u, 1447153u, 1565659u,
-  1693859u, 1832561u, 1982627u, 2144977u, 2320627u, 2510653u,
-  2716249u, 2938679u, 3179303u, 3439651u, 3721303u, 4026031u,
-  4355707u, 4712381u, 5098259u, 5515729u, 5967347u, 6456007u,
-  6984629u, 7556579u, 8175383u, 8844859u, 9569143u, 10352717u,
-  11200489u, 12117689u, 13109983u, 14183539u, 15345007u,
-  16601593u, 17961079u, 19431899u, 21023161u, 22744717u,
-  24607243u, 26622317u, 28802401u, 31160981u, 33712729u,
-  36473443u, 39460231u, 42691603u, 46187573u, 49969847u,
-  54061849u, 58488943u, 63278561u, 68460391u, 74066549u,
-  80131819u, 86693767u, 93793069u, 101473717u, 109783337u,
-  118773397u, 128499677u, 139022417u, 150406843u, 162723577u,
-  176048909u, 190465427u, 206062531u, 222936881u, 241193053u,
-  260944219u, 282312799u, 305431229u, 330442829u, 357502601u,
-  386778277u, 418451333u, 452718089u, 489790921u, 529899637u,
-  573292817u, 620239453u, 671030513u, 725980837u, 785430967u,
-  849749479u, 919334987u, 994618837u, 1076067617u, 1164186217u,
-  1259520799u, 1362662261u, 1474249943u, 1594975441u, 1725587117u,
-  1866894511u, 2019773507u, 2185171673u, 2364114217u, 2557710269u,
-  2767159799u, 2993761039u, 3238918481u, 3504151727u, 3791104843u,
-  4101556399u, 4294967291u, 4294967291u
-};
-
-static const size_t kPrimeListSize = Pe_ARRAYSIZE(kPrimeList);
-
-static const float kLoadFactor = 1.0;
-
-static uint32_t binarySearch(const uint32_t* first, size_t len, uint32_t val) {
+static uint64_t lowerBound(const uint64_t* ptr, size_t len, uint64_t val) {
   while (len > 0) {
-    size_t half = len >> 1;
-    const uint32_t* middle = first;
-    if (*middle < val) {
-      first = middle;
-      ++first;
+    size_t half = len / 2;
+    if (*(ptr + half) < val) {
+      ptr += half + 1;
+      len -= half + 1;
     } else {
       len = half;
     }
   }
-  return first;
+  return *ptr;
 }
 
-static inline
-size_t Pe_getBucket(size_t num_elts, long double load_factor) {
-  return ceil(num_elts / load_factor);
+static Pe_HashTableNode* allocNode(void* elt) {
+  Pe_HashTableNode* node = Pe_CAST(Pe_HashTableNode*, Pe_alloc(sizeof(node)));
+  node->elt = elt;
+  node->hash_code = 0;
+  node->next = NULL;
 }
 
-static inline
-size_t Pe_hashing(size_t num, size_t den) {
-#ifdef PE_DIVISION_METHOD
-  /* For modulo range hashing, use division to fold a large */
+static const double kMaxLoadFactor = 1.0;
+#define Pe_getBuckets(num_elts) ceil(num_elts * kMaxLoadFactor)
+#define Pe_getLoadFactor(num_elts, num_bkts) (num_elts / num_bkts)
 
-#else /* Multiplication method */
+static const uint64_t kMaxPrime = 18446744073709551557ul;
+static const uint64_t kPrimeList[] = {
+  2ul, 3ul, 5ul, 7ul, 11ul, 13ul, 17ul, 19ul, 23ul, 29ul, 31ul,
+  37ul, 41ul, 43ul, 47ul, 53ul, 59ul, 61ul, 67ul, 71ul, 73ul, 79ul,
+  83ul, 89ul, 97ul, 103ul, 109ul, 113ul, 127ul, 137ul, 139ul, 149ul,
+  157ul, 167ul, 179ul, 193ul, 199ul, 211ul, 227ul, 241ul, 257ul,
+  277ul, 293ul, 313ul, 337ul, 359ul, 383ul, 409ul, 439ul, 467ul,
+  503ul, 541ul, 577ul, 619ul, 661ul, 709ul, 761ul, 823ul, 887ul,
+  953ul, 1031ul, 1109ul, 1193ul, 1289ul, 1381ul, 1493ul, 1613ul,
+  1741ul, 1879ul, 2029ul, 2179ul, 2357ul, 2549ul, 2753ul, 2971ul,
+  3209ul, 3469ul, 3739ul, 4027ul, 4349ul, 4703ul, 5087ul, 5503ul,
+  5953ul, 6427ul, 6949ul, 7517ul, 8123ul, 8783ul, 9497ul, 10273ul,
+  11113ul, 12011ul, 12983ul, 14033ul, 15173ul, 16411ul, 17749ul,
+  19183ul, 20753ul, 22447ul, 24281ul, 26267ul, 28411ul, 30727ul,
+  33223ul, 35933ul, 38873ul, 42043ul, 45481ul, 49201ul, 53201ul,
+  57557ul, 62233ul, 67307ul, 72817ul, 78779ul, 85229ul, 92203ul,
+  99733ul, 107897ul, 116731ul, 126271ul, 136607ul, 147793ul,
+  159871ul, 172933ul, 187091ul, 202409ul, 218971ul, 236897ul,
+  256279ul, 277261ul, 299951ul, 324503ul, 351061ul, 379787ul,
+  410857ul, 444487ul, 480881ul, 520241ul, 562841ul, 608903ul,
+  658753ul, 712697ul, 771049ul, 834181ul, 902483ul, 976369ul,
+  1056323ul, 1142821ul, 1236397ul, 1337629ul, 1447153ul, 1565659ul,
+  1693859ul, 1832561ul, 1982627ul, 2144977ul, 2320627ul, 2510653ul,
+  2716249ul, 2938679ul, 3179303ul, 3439651ul, 3721303ul, 4026031ul,
+  4355707ul, 4712381ul, 5098259ul, 5515729ul, 5967347ul, 6456007ul,
+  6984629ul, 7556579ul, 8175383ul, 8844859ul, 9569143ul, 10352717ul,
+  11200489ul, 12117689ul, 13109983ul, 14183539ul, 15345007ul,
+  16601593ul, 17961079ul, 19431899ul, 21023161ul, 22744717ul,
+  24607243ul, 26622317ul, 28802401ul, 31160981ul, 33712729ul,
+  36473443ul, 39460231ul, 42691603ul, 46187573ul, 49969847ul,
+  54061849ul, 58488943ul, 63278561ul, 68460391ul, 74066549ul,
+  80131819ul, 86693767ul, 93793069ul, 101473717ul, 109783337ul,
+  118773397ul, 128499677ul, 139022417ul, 150406843ul, 162723577ul,
+  176048909ul, 190465427ul, 206062531ul, 222936881ul, 241193053ul,
+  260944219ul, 282312799ul, 305431229ul, 330442829ul, 357502601ul,
+  386778277ul, 418451333ul, 452718089ul, 489790921ul, 529899637ul,
+  573292817ul, 620239453ul, 671030513ul, 725980837ul, 785430967ul,
+  849749479ul, 919334987ul, 994618837ul, 1076067617ul, 1164186217ul,
+  1259520799ul, 1362662261ul, 1474249943ul, 1594975441ul, 1725587117ul,
+  1866894511ul, 2019773507ul, 2185171673ul, 2364114217ul, 2557710269ul,
+  2767159799ul, 2993761039ul, 3238918481ul, 3504151727ul, 3791104843ul,
+  4101556399ul, 4294967291ul, 442450933ul, 8589934583ul, 12884901857ul,
+  17179869143ul, 25769803693ul, 34359738337ul, 51539607367ul, 68719476731ul,
+  103079215087ul, 137438953447ul, 206158430123ul, 274877906899ul,
+  412316860387ul, 549755813881ul, 824633720731ul, 1099511627689ul,
+  1649267441579ul, 2199023255531ul, 3298534883309ul, 4398046511093ul,
+  6597069766607ul, 8796093022151ul, 13194139533241ul, 17592186044399ul,
+  26388279066581ul, 35184372088777ul, 52776558133177ul, 70368744177643ul,
+  105553116266399ul, 140737488355213ul, 211106232532861ul, 281474976710597ul,
+  562949953421231ul, 1125899906842597ul, 2251799813685119ul,
+  4503599627370449ul, 9007199254740881ul, 18014398509481951ul,
+  36028797018963913ul, 72057594037927931ul, 144115188075855859ul,
+  288230376151711717ul, 576460752303423433ul, 1152921504606846883ul,
+  2305843009213693951ul, 4611686018427387847ul, 9223372036854775783ul,
+  kMaxPrime, kMaxPrime
+};
 
-#endif
-}
-
-
-/* Return a bucket size no smaller than n. */
-static inline
-size_t Pe_getNextBucket(size_t n) {
-#ifdef PE_DIVISION_METHOD
-
-#else /* Multiplication method */
-
-#endif
-}
+static const size_t kPrimeListSize = Pe_ARRAYSIZE(kPrimeList) - 1;
 
 Pe_HashTable* PeHashTable_alloc() {
   return Pe_CAST(Pe_HashTable*, Pe_alloc(sizeof(Pe_HashTable)));
 }
 
-void PeHashTable_init(Pe_HashTable* table, Pe_HashTableTraits traits) {
+void PeHashTable_init(Pe_HashTable* table, Pe_HashTableTraits traits, size_t n) {
   table->traits = traits;
-  table->load_factor = 1.0;
-  table->num_bkts = 10;
+  table->bkts = NULL;
+  table->num_bkts = 0;
   table->num_elts = 0;
+  if (n > 0) {
+    size_t num_bkts = lowerBound(kPrimeList, kPrimeListSize, n);
+    size_t alloc_size = sizeof(Pe_HashTableNode*) * num_bkts;
+    Pe_HashTableNode** bkts = Pe_CAST(Pe_HashTableNode**, Pe_alloc(alloc_size));
+    memset(bkts, 0, alloc_size);
+    table->num_bkts = num_bkts;
+    table->bkts = bkts;
+  }
+}
+
+void PeHashTable_init2(Pe_HashTable* table, Pe_HashTableTraits traits) {
+  PeHashTable_init(table, traits, 10);
 }
 
 void PeHashTable_add(Pe_HashTable* table, void* elt) {
+  size_t num_elts = table->num_elts + 1;
+  if (Pe_getLoadFactor(num_elts, table->num_bkts) > kMaxLoadFactor) {
+    size_t num_bkts = Pe_getBuckets(num_elts);
+    if (num_bkts >= table->num_bkts) {
+      num_bkts = Pe_MAX(num_bkts + 1, table->num_bkts * 2);
+      num_bkts = lowerBound(kPrimeList, kPrimeListSize, num_bkts);
+      size_t alloc_size = sizeof(Pe_HashTableNode*) * num_bkts;
+      Pe_HashTableNode** bkts = Pe_CAST(Pe_HashTableNode**, Pe_alloc(alloc_size));
+      memset(bkts, 0, alloc_size);
+      for (size_t i = 0; i < table->num_bkts; ++i) {
+        Pe_HashTableNode* node = table->bkts[i];
+        if (node)
+          bkts[node->hash_code % num_bkts] = node;
+      }
+      Pe_free(table->bkts);
+      table->bkts = bkts;
+      table->num_bkts = num_bkts;
+    }
+  }
 
+  void* key = table->traits.extract(elt);
+  uint32_t hash_code = table->traits.hash(key);
+  uint32_t index = hash_code % table->num_bkts;
+  Pe_HashTableNode* ptr = table->bkts[index];
+  while (ptr) {
+    const void* x = table->traits.extract(ptr->elt);
+    const void* y = table->traits.extract(elt);
+    if (table->traits.compare(x, y) == 0) {
+      table->traits.free(ptr->elt);
+      ptr->elt = elt;
+      return;
+    }
+  }
+  Pe_HashTableNode* node = allocNode(elt);
+  node->hash_code = index;
+  node->next = table->bkts[index];
+  table->bkts[index] = node;
 }
 
 void PeHashTable_remove(Pe_HashTable* table, const void* key) {
-
+  uint32_t hash_code = table->traits.hash(key);
+  uint32_t index = hash_code % table->num_bkts;
+  Pe_HashTableNode* ptr = table->bkts[index];
+  while (ptr) {
+    Pe_HashTableNode* tmp = ptr;
+    ptr = ptr->next;
+    const void* x = table->traits.extract(tmp->elt);
+    if (table->traits.compare(x, key) == 0) {
+      table->traits.free(tmp->elt);
+      Pe_free(tmp);
+      break;
+    }
+  }
 }
 
 void PeHashTable_remove2(Pe_HashTable* table, const void* elt) {
@@ -137,7 +193,7 @@ void* PeHashTable_find(Pe_HashTable* table, const void* key) {
 }
 
 void* PeHashTable_find2(Pe_HashTable* table, const void* elt) {
-
+  return PeHashTable_find()
 }
 
 void PeHashTable_foreach(Pe_HashTable* table,
@@ -151,11 +207,24 @@ int PeHashTable_isEmpty(Pe_HashTable* table) {
 }
 
 void PeHashTable_clear(Pe_HashTable* table) {
-
+  for (size_t i = 0; i < table->num_bkts; ++i) {
+    Pe_HashTableNode* node = table->bkts[i];
+    Pe_HashTableNode* next;
+    while (node) {
+      next = node->next;
+      table->traits.free(node->elt);
+      Pe_free(node);
+      node = next;
+    }
+    table->bkts[i] = NULL;
+  }
+  table->num_elts = 0;
 }
 
 void PeHashTable_free(Pe_HashTable* table) {
-
+  PeHashTable_clear(table);
+  Pe_free(table->bkts);
+  Pe_free(table);
 }
 
 #define PE_HASHTABLE_
@@ -191,7 +260,7 @@ static const void* extract(const void* p) {
 }
 
 static void freeWrapper(void* p) {
-  free(Pe_CAST(Persion*, p));
+  free(p);
 }
 
 int compare(const void* x, const void* y) {
