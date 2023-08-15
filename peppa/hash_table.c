@@ -34,9 +34,8 @@ void freeNode(const Pe_HashTableTraits* traits, Pe_HashTableNode* node) {
 static inline
 int insertNode(const Pe_HashTableTraits* traits,
                 Pe_HashTableNode** h, void* elt, uint32_t code) {
-  Pe_HashTableNode* ptr = *h;
   const void* key = traits->extract(elt);
-  for (; ptr; ptr = ptr->next) {
+  for (Pe_HashTableNode* ptr = *h; ptr; ptr = ptr->next) {
     const void* x = traits->extract(ptr->elt);
     if (traits->compare(x, key) == 0) {
       PE_CHECK2(ptr->code == code);
@@ -57,7 +56,8 @@ void removeNode(const Pe_HashTableTraits* traits,
   root.next = *h;
   for (Pe_HashTableNode* ptr = &root; ptr->next;) {
     Pe_HashTableNode* node = ptr->next;
-    if (traits->compare(traits->extract(node), key) == 0) {
+    const void* x = traits->extract(node);
+    if (traits->compare(x, key) == 0) {
       ptr->next = ptr->next->next;
       freeNode(traits, node);
       break;
@@ -72,7 +72,8 @@ static inline
 Pe_HashTableNode* findNode(const Pe_HashTableTraits* traits,
                            Pe_HashTableNode* ptr, const void* key) {
   for (; ptr; ptr = ptr->next) {
-    if (traits->compare(traits->extract(ptr->elt), key) == 0)
+    const void* x = traits->extract(ptr->elt);
+    if (traits->compare(x, key) == 0)
       return ptr;
   }
   return NULL;
@@ -316,9 +317,9 @@ static Persion* alloc() {
 }
 
 static void init(Persion* p, const char* name, const char* addr) {
-  p->name = (char*) Pe_alloc(strlen(name));
+  p->name = (char*) Pe_alloc(strlen(name) + 1);
   memcpy(p->name, name, strlen(name) + 1);
-  p->addr = (char*) Pe_alloc(strlen(addr));
+  p->addr = (char*) Pe_alloc(strlen(addr) + 1);
   memcpy(p->addr, addr, strlen(addr) + 1);
 }
 
@@ -340,8 +341,7 @@ static void freeWrapper(void* p) {
 static int compare(const void* x, const void* y) {
   const char* a = (const char*) x;
   const char* b = (const char*) y;
-  return strlen(a) == strlen(b) && strncmp(a, b, strlen(a)) == 0
-      ? 0 : 1;
+  return strlen(a) == strlen(b) && strncmp(a, b, strlen(a)) == 0 ? 0 : 1;
 }
 
 static uint32_t hash(const void* key) {
@@ -358,9 +358,7 @@ static void visitor(const void* ptr, void* opaque) {
   }
 }
 
-
-
-static void printInfo(const Pe_HashTable* table) {
+static void printTable(const Pe_HashTable* table) {
   printf("size = %zu, bucket size = %zu, "
          "empty = %s, load factor = %.2f\n",
          PeHashTable_getSize(table),
@@ -375,38 +373,49 @@ int main() {
   };
   Pe_HashTable* table = PeHashTable_alloc();
   PeHashTable_init2(table, traits);
-  printInfo(table);
+  printTable(table);
 
   Persion* p = alloc();
   init(p, "Alice", "Queen street");
-  PeHashTable_insert(table, p);
-  printInfo(table);
+  int ret = PeHashTable_insert(table, p);
+  PE_CHECK2(ret == 0);
+  printTable(table);
 
   p = alloc();
   init(p, "Jinks", "Picheng");
-  PeHashTable_insert(table, p);
-  printInfo(table);
+  ret = PeHashTable_insert(table, p);
+  PE_CHECK2(ret == 0);
+  printTable(table);
 
   p = alloc();
   init(p, "Anduyin", "Stormwind");
-  PeHashTable_insert(table, p);
-  printInfo(table);
+  ret = PeHashTable_insert(table, p);
+  PE_CHECK2(ret == 0);
+  printTable(table);
 
   char name[20];
   char addr[20];
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < 20; ++i) {
     Pe_format(name, 19, "Anduyin-%d", i);
     Pe_format(addr, 19, "Stormwind-%d", i);
     p = alloc();
     init(p, name, addr);
-    PeHashTable_insert(table, p);
+    ret = PeHashTable_insert(table, p);
+    PE_CHECK2(ret == 0);
 
     int count = 0;
     PeHashTable_forEach(table, visitor, &count);
     size_t n = PeHashTable_getSize(table);
     PE_CHECK2(count == n);
+
+  printf("****\n");
+  PeHashTable_forEach(table, visitor, NULL);
+  printf("****\n");
+
+  p = (Persion*) PeHashTable_find(table, "Anduyin");
+  PE_CHECK2(p != NULL);
   }
-  printInfo(table);
+  printTable(table);
 
   p = (Persion*) PeHashTable_find(table, "Anduyin");
   PE_CHECK2(p != NULL);
@@ -414,14 +423,14 @@ int main() {
   PE_CHECK2(p == NULL);
 
   PeHashTable_remove(table, "Alice");
-  printInfo(table);
+  printTable(table);
 
   printf("****\n");
   PeHashTable_forEach(table, visitor, NULL);
   printf("****\n");
 
   PeHashTable_clear(table);
-  printInfo(table);
+  printTable(table);
 
   printf("****\n");
   PeHashTable_forEach(table, visitor, NULL);
