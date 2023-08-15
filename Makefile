@@ -7,8 +7,9 @@ LDFLAGS = -lpthread
 
 GTEST_CORE = $(CURDIR)/third_party/gtest/gmock-gtest-all.cc
 GTEST_MAIN = $(CURDIR)/third_party/gtest/gtest_main.cc
+TARGET = list_test hash_table_test
 
-all: list_test;
+all: $(TARGET);
 
 lexer: peppa/lexer.c peppa/lexer.h;
 #	gcc -std=c99 -D_GNU_SOURCE -Wall -Wextra -I. -g -o $@ $<
@@ -24,9 +25,12 @@ peppa/parser.h peppa/parser.c: peppa/parser.y
 list_test: peppa/list_test.cc $(GTEST_CORE) $(GTEST_MAIN)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
+hash_table_test: peppa/hash_table.c peppa/hash.c peppa/error.c peppa/alloc.c peppa/format.c
+	gcc -DPE_HASHTABLE_TEST $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
 clean:
 	rm -rf peppa/lexer.c peppa/lexer.h \
 		peppa/parser.h peppa/parser.c peppa/parser.output \
-		lexer list_test
+		$(TARGET)
 
-.PHONY: parser lexer
+.PHONY: $(TARGET)

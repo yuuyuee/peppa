@@ -17,7 +17,7 @@ size_t Pe_formatv(char* buf, size_t size, const char* fmt, va_list ap) {
   if (ret < 0) {
     buf[0] = '\0';
     ret = 0;
-  } else if (ret >= size) {
+  } else if ((size_t) ret >= size) {
     buf[size - 1] = '\0';
     ret = size - 1;
   }

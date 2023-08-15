@@ -31,12 +31,12 @@ Pe_HashTable* PeHashTable_alloc() Pe_NODISCARD;
 void PeHashTable_init(Pe_HashTable* table, Pe_HashTableTraits traits, size_t n);
 void PeHashTable_init2(Pe_HashTable* table, Pe_HashTableTraits traits);
 
-/* Add an element into the hash table. the element will be override
- * if the hash table does already contain an element with key equivalent
- * to key. */
-void PeHashTable_add(Pe_HashTable* table, void* elt);
+/* Inserts an element into the hash table. return zero if the hash table
+ * does not already contain an element with key equivalent to key,
+ * otherwise returns nonezero value. */
+int PeHashTable_insert(Pe_HashTable* table, void* elt);
 
-/* Remove an element from the hash table by the key of this element. */
+/* Removes an element from the hash table by the key of this element. */
 void PeHashTable_remove(Pe_HashTable* table, const void* key);
 void PeHashTable_remove2(Pe_HashTable* table, const void* elt);
 
@@ -47,17 +47,26 @@ void* PeHashTable_find2(Pe_HashTable* table, const void* elt);
 typedef void (*Pe_HashTableVisitor)(const void* elt, void* opaque);
 
 /* Applies the given function to the all elements of the hash table. */
-void PeHashTable_foreach(Pe_HashTable* table,
+void PeHashTable_forEach(const Pe_HashTable* table,
                          Pe_HashTableVisitor visitor,
                          void* opaque);
 
 /* Checks if the hash table has no elements. */
-int PeHashTable_isEmpty(Pe_HashTable* table);
+int PeHashTable_isEmpty(const Pe_HashTable* table);
 
-/* Clears all elements of the hash table. */
+/* Clears all elements in the hash table. */
 void PeHashTable_clear(Pe_HashTable* table);
 
-/* Free an hash table. */
+/* Returns the number of elements in the hash table. */
+size_t PeHashTable_getSize(const Pe_HashTable* table);
+
+/* Returns the number of buckets in the hash table. */
+size_t PeHashTable_getBucketSize(const Pe_HashTable* table);
+
+/* Returns the average number of elements per bucket. */
+float PeHashTable_getLoadFactor(const Pe_HashTable* table);
+
+/* Frees an hash table. */
 void PeHashTable_free(Pe_HashTable* table);
 
 #endif  /* PEPPA_HASH_TABLE_H_ */

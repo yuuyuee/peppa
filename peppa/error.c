@@ -5,6 +5,7 @@
 /* XSI-compliant version of strerror_r */
 #ifdef _GNU_SOURCE
 # undef _GNU_SOURCE
+# undef __USE_GNU
 #endif
 
 #ifndef _XOPEN_SOURCE
@@ -28,7 +29,7 @@ static const struct Pe_ErrorEntry {
 
 const char* Pe_strError(int errnum, char* buf, size_t size) {
   const struct Pe_ErrorEntry* entry = NULL;
-  for (int i = 0; i < Pe_ARRAYSIZE(error_entries); ++i) {
+  for (unsigned int i = 0; i < Pe_ARRAYSIZE(error_entries); ++i) {
     if (errnum == error_entries[i].num) {
       entry = &error_entries[i];
       break;
