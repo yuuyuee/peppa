@@ -32,43 +32,6 @@ void freeNode(const Pe_HashTableTraits* traits, Pe_HashTableNode* node) {
 }
 
 static inline
-int insertNode(const Pe_HashTableTraits* traits,
-                Pe_HashTableNode** h, void* elt, uint32_t code) {
-  const void* key = traits->extract(elt);
-  for (Pe_HashTableNode* ptr = *h; ptr; ptr = ptr->next) {
-    const void* x = traits->extract(ptr->elt);
-    if (traits->compare(x, key) == 0) {
-      PE_CHECK2(ptr->code == code);
-      return 1;
-    }
-  }
-
-  Pe_HashTableNode* node = allocNode(elt, code);
-  node->next = *h;
-  *h = node;
-  return 0;
-}
-
-static inline
-void removeNode(const Pe_HashTableTraits* traits,
-                Pe_HashTableNode** h, const void* key) {
-  Pe_HashTableNode root;
-  root.next = *h;
-  for (Pe_HashTableNode* ptr = &root; ptr->next;) {
-    Pe_HashTableNode* node = ptr->next;
-    const void* x = traits->extract(node);
-    if (traits->compare(x, key) == 0) {
-      ptr->next = ptr->next->next;
-      freeNode(traits, node);
-      break;
-    } else {
-      ptr = ptr->next;
-    }
-  }
-  *h = root.next;
-}
-
-static inline
 Pe_HashTableNode* findNode(const Pe_HashTableTraits* traits,
                            Pe_HashTableNode* ptr, const void* key) {
   for (; ptr; ptr = ptr->next) {
@@ -80,10 +43,56 @@ Pe_HashTableNode* findNode(const Pe_HashTableTraits* traits,
 }
 
 static inline
-void forEach(const Pe_HashTableNode* ptr,
-             Pe_HashTableVisitor visitor, void* opaque) {
+void insertNode(Pe_HashTableNode** h, Pe_HashTableNode* node) {
+  node->next = *h;
+  *h = node;
+}
+
+static inline
+int insertNode2(const Pe_HashTableTraits* traits,
+                Pe_HashTableNode** h, void* elt, uint32_t code) {
+  const void* key = traits->extract(elt);
+  Pe_HashTableNode* node = findNode(traits, *h, key);
+  if (node == NULL) {
+    node = allocNode(elt, code);
+    insertNode(h, node);
+    return 0;
+  }
+  return 1;
+}
+
+static inline
+void removeNode(const Pe_HashTableTraits* traits,
+                Pe_HashTableNode** h, const void* key) {
+  Pe_HashTableNode root;
+  root.next = *h;
+  for (Pe_HashTableNode* ptr = &root; ptr->next;) {
+    Pe_HashTableNode* node = ptr->next;
+    const void* x = traits->extract(node->elt);
+    if (traits->compare(x, key) == 0) {
+      ptr->next = node->next;
+      freeNode(traits, node);
+      break;
+    } else {
+      ptr = ptr->next;
+    }
+  }
+  *h = root.next;
+}
+
+static inline
+void forEachNode(const Pe_HashTableNode* ptr,
+                 Pe_HashTableVisitor visitor, void* opaque) {
   for (; ptr; ptr = ptr->next)
     visitor(ptr->elt, opaque);
+}
+
+static inline
+Pe_HashTableNode* releaseNode(Pe_HashTableNode** h) {
+  if (*h == NULL) return NULL;
+  Pe_HashTableNode* node = *h;
+  *h = node->next;
+  return node;
 }
 
 static inline
@@ -118,8 +127,11 @@ unsigned int lowerBound(const unsigned int* ptr, size_t len, unsigned int val) {
 }
 
 static const float kMaxLoadFactor = 1.0;
-#define Pe_getBuckets(num_elts) ((size_t) ceil(num_elts * kMaxLoadFactor))
-#define Pe_getLoadFactor(num_elts, num_bkts) ((long double) num_elts / num_bkts)
+#define Pe_getBuckets(num_elts) ((size_t) ceil(num_elts / (double) kMaxLoadFactor))
+#define Pe_getLoadFactor(num_elts, num_bkts) (num_elts / (double) num_bkts)
+
+/* Use division to fold a large number into the range [0, dev). */
+#define Pe_getBucketIndex(code, num_bkts) ((code) % (num_bkts))
 
 static const unsigned int kMaxPrime = 4294967291ul;
 static const unsigned int kPrimeList[] = {
@@ -184,16 +196,19 @@ static void resizeBuckets(Pe_HashTable* table, size_t num_bkts) {
   /* Rehashing exists elements to new buckets. */
   if (table->num_elts > 0) {
     for (size_t i = 0; i < table->num_bkts; ++i) {
-      if (table->bkts[i]) {
-        size_t index = table->bkts[i]->code % num_bkts;
-        if (bkts[index]) {
-          Pe_HashTableNode* ptr = bkts[index];
-          while (ptr->next)
-            ptr = ptr->next;
-          ptr->next = table->bkts[i];
-        } else {
-          bkts[index] = table->bkts[i];
-        }
+      // for (Pe_HashTableNode* ptr = table->bkts[i]; ptr;) {
+      //   Pe_HashTableNode* node = ptr;
+      //   ptr = ptr->next;
+
+      //   size_t index = Pe_getBucketIndex(node->code, num_bkts);
+      //   node->next = bkts[index];
+      //   bkts[index] = node;
+      // }
+
+      Pe_HashTableNode* node = releaseNode(&table->bkts[i]);
+      for (; node; node = releaseNode(&table->bkts[i])) {
+        size_t index = Pe_getBucketIndex(node->code, num_bkts);
+        insertNode(&bkts[index], node);
       }
     }
     Pe_free(table->bkts);
@@ -231,8 +246,8 @@ int PeHashTable_insert(Pe_HashTable* table, void* elt) {
 
   const void* key = table->traits.extract(elt);
   uint32_t code = table->traits.hash(key);
-  size_t index = code % table->num_bkts;
-  int ret = insertNode(&table->traits, &table->bkts[index], elt, code);
+  size_t index = Pe_getBucketIndex(code, table->num_bkts);
+  int ret = insertNode2(&table->traits, &table->bkts[index], elt, code);
   if (ret == 0)
     ++table->num_elts;
   return ret;
@@ -240,7 +255,7 @@ int PeHashTable_insert(Pe_HashTable* table, void* elt) {
 
 void PeHashTable_remove(Pe_HashTable* table, const void* key) {
   uint32_t code = table->traits.hash(key);
-  size_t index = code % table->num_bkts;
+  size_t index = Pe_getBucketIndex(code, table->num_bkts);
   removeNode(&table->traits, &table->bkts[index], key);
   --table->num_elts;
 }
@@ -251,7 +266,7 @@ void PeHashTable_remove2(Pe_HashTable* table, const void* elt) {
 
 void* PeHashTable_find(Pe_HashTable* table, const void* key) {
   uint32_t code = table->traits.hash(key);
-  size_t index = code % table->num_bkts;
+  size_t index = Pe_getBucketIndex(code, table->num_bkts);
   Pe_HashTableNode* ptr = findNode(&table->traits, table->bkts[index], key);
   return ptr ? ptr->elt : NULL;
 }
@@ -263,10 +278,8 @@ void* PeHashTable_find2(Pe_HashTable* table, const void* elt) {
 void PeHashTable_forEach(const Pe_HashTable* table,
                          Pe_HashTableVisitor visitor,
                          void* opaque) {
-  for (size_t i = 0; i < table->num_bkts; ++i) {
-    if (table->bkts[i])
-      forEach(table->bkts[i], visitor, opaque);
-  }
+  for (size_t i = 0; i < table->num_bkts; ++i)
+    forEachNode(table->bkts[i], visitor, opaque);
 }
 
 int PeHashTable_isEmpty(const Pe_HashTable* table) {
@@ -274,10 +287,8 @@ int PeHashTable_isEmpty(const Pe_HashTable* table) {
 }
 
 void PeHashTable_clear(Pe_HashTable* table) {
-  for (size_t i = 0; i < table->num_bkts; ++i) {
-    if (table->bkts[i])
-      clearNode(&table->traits, &table->bkts[i]);
-  }
+  for (size_t i = 0; i < table->num_bkts; ++i)
+    clearNode(&table->traits, &table->bkts[i]);
   table->num_elts = 0;
 }
 
@@ -346,7 +357,8 @@ static int compare(const void* x, const void* y) {
 
 static uint32_t hash(const void* key) {
   const char* p = (const char*) key;
-  return Pe_getHashValue(p, strlen(p));
+  uint32_t code = Pe_getHashValue(p, strlen(p));
+  return code;
 }
 
 static void visitor(const void* ptr, void* opaque) {
@@ -393,48 +405,57 @@ int main() {
   PE_CHECK2(ret == 0);
   printTable(table);
 
+  p = alloc();
+  init(p, "Anduyin", "Stormwind");
+  ret = PeHashTable_insert(table, p);
+  PE_CHECK2(ret == 1);
+  printTable(table);
+
   char name[20];
   char addr[20];
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 0; i < 3000000; ++i) {
     Pe_format(name, 19, "Anduyin-%d", i);
     Pe_format(addr, 19, "Stormwind-%d", i);
     p = alloc();
     init(p, name, addr);
     ret = PeHashTable_insert(table, p);
     PE_CHECK2(ret == 0);
-
-    int count = 0;
-    PeHashTable_forEach(table, visitor, &count);
-    size_t n = PeHashTable_getSize(table);
-    PE_CHECK2(count == n);
-
-  printf("****\n");
-  PeHashTable_forEach(table, visitor, NULL);
-  printf("****\n");
-
-  p = (Persion*) PeHashTable_find(table, "Anduyin");
-  PE_CHECK2(p != NULL);
   }
   printTable(table);
+
+  int count = 0;
+  PeHashTable_forEach(table, visitor, &count);
+  size_t n = PeHashTable_getSize(table);
+  PE_CHECK2((size_t) count == n);
 
   p = (Persion*) PeHashTable_find(table, "Anduyin");
   PE_CHECK2(p != NULL);
   p = (Persion*) PeHashTable_find(table, "Varian");
   PE_CHECK2(p == NULL);
 
-  PeHashTable_remove(table, "Alice");
-  printTable(table);
+  // printf(">>>>\n");
+  // PeHashTable_forEach(table, visitor, NULL);
+  // printf("<<<<\n");
+  // printTable(table);
 
-  printf("****\n");
-  PeHashTable_forEach(table, visitor, NULL);
-  printf("****\n");
+  PeHashTable_remove(table, "Anduyin");
+
+  // printf(">>>>\n");
+  // PeHashTable_forEach(table, visitor, NULL);
+  // printf("<<<<\n");
+  // printTable(table);
+
+  p = (Persion*) PeHashTable_find(table, "Anduyin");
+  PE_CHECK2(p == NULL);
+  printTable(table);
 
   PeHashTable_clear(table);
-  printTable(table);
+  n = PeHashTable_getSize(table);
+  PE_CHECK2(n == 0);
 
-  printf("****\n");
-  PeHashTable_forEach(table, visitor, NULL);
-  printf("****\n");
+  p = (Persion*) PeHashTable_find(table, "Anduyin-0");
+  PE_CHECK2(p == NULL);
+  printTable(table);
 
   PeHashTable_free(table);
   return 0;

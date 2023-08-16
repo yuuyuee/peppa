@@ -48,8 +48,7 @@ typedef void (*Pe_HashTableVisitor)(const void* elt, void* opaque);
 
 /* Applies the given function to the all elements of the hash table. */
 void PeHashTable_forEach(const Pe_HashTable* table,
-                         Pe_HashTableVisitor visitor,
-                         void* opaque);
+                         Pe_HashTableVisitor visitor, void* opaque);
 
 /* Checks if the hash table has no elements. */
 int PeHashTable_isEmpty(const Pe_HashTable* table);
