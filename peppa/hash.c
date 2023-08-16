@@ -18,7 +18,7 @@ struct Pe_HashContext {
 
 /* Allocate an hash context. */
 Pe_HashContext* PeHashContext_alloc() {
-  return Pe_CAST(Pe_HashContext*, Pe_alloc(sizeof(Pe_HashContext)));
+  return (Pe_HashContext*) Pe_alloc(sizeof(Pe_HashContext));
 }
 
 #define Pe_DFL_SEED UINT32_C(0xec4e6c89)

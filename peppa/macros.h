@@ -13,9 +13,9 @@
 #define Pe_MIN3(a, b, c) Pe_MIN(Pe_MIN(a, b), c)
 
 #define Pe_SWAP(type, a, b) do {  \
-  type tmp = b;                   \
-  b = a;                          \
-  a = tmp;                        \
+  type tmp = (b);                 \
+  (b) = (a);                      \
+  (a) = tmp;                      \
 } while (0)
 
 #ifndef Pe_STRINGFY
@@ -35,11 +35,10 @@
 #ifdef offsetof
 # define Pe_OFFSETOF(type, member) offsetof(type, member)
 #else
-# define Pe_OFFSETOF(type, member) \
-  Pe_CAST(size_t, &(Pe_CAST(type*, 0)->member))
+# define Pe_OFFSETOF(type, member) ((size_t) &((type*) 0)->member)
 #endif
 
 #define Pe_CONTAINER_OF(ptr, type, member) \
-  Pe_CAST(type *, Pe_CAST(char *, ptr) - Pe_OFFSETOF(type, member))
+  ((type *) (((char *) ptr) - Pe_OFFSETOF(type, member)))
 
 #endif  /* PEPPA_MACROS_H_ */

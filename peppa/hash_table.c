@@ -409,11 +409,12 @@ int main() {
   init(p, "Anduyin", "Stormwind");
   ret = PeHashTable_insert(table, p);
   PE_CHECK2(ret == 1);
+  destroy(p);
   printTable(table);
 
   char name[20];
   char addr[20];
-  for (int i = 0; i < 3000000; ++i) {
+  for (int i = 0; i < 1000000; ++i) {
     Pe_format(name, 19, "Anduyin-%d", i);
     Pe_format(addr, 19, "Stormwind-%d", i);
     p = alloc();

@@ -9,8 +9,8 @@
 
 typedef void* Pe_ListNode[2];
 
-#define PeList_next(n) *Pe_CAST(Pe_ListNode**, &((*(n))[0]))
-#define PeList_prev(n) *Pe_CAST(Pe_ListNode**, &((*(n))[1]))
+#define PeList_next(n) (*(Pe_ListNode**) &((*(n))[0]))
+#define PeList_prev(n) (*(Pe_ListNode**) &((*(n))[1]))
 #define PeList_prevNext(n) (PeList_next(PeList_prev(n)))
 #define PeList_nextPrev(n) (PeList_prev(PeList_next(n)))
 
@@ -22,7 +22,7 @@ typedef void* Pe_ListNode[2];
 } while (0)
 
 #define PeList_empty(h)                               \
-  (Pe_CAST(const Pe_ListNode*, (h)) == PeList_next(h))
+  ((const Pe_ListNode*) (h) == PeList_next(h))
 
 #define PeList_foreach(n, h)                          \
   for ((n) = PeList_next(h); (n) != (h); (n) = PeList_next(n))

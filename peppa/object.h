@@ -5,6 +5,17 @@
 
 #include <stdint.h>
 
+enum {
+  PeObject_NONE = 0,
+  PeObject_BOOL,
+  PeObject_INT,
+  PeObject_NUM,
+  PeObject_STR,
+  PeObject_LIST,
+  PeObject_DICT,
+  PeObject_FUNC,
+};
+
 /* Type of none */
 
 /* Type of boolean */
@@ -24,7 +35,7 @@ typedef struct Pe_String {
 } Pe_String;
 
 /* Type of array */
-typedef struct Pe_Array {
+typedef struct Pe_List {
 
 } Pe_Array;
 
@@ -53,18 +64,7 @@ typedef struct Pe_Dict {
  *
  * */
 
-enum {
-  PeObject_REF,
-  PeObject_NONE,
-  PeObject_BOOL,
-  PeObject_INT,
-  PeObject_NUM,
-  PeObject_STR,
-  PeObject_ARRAY,
-  PeObject_DICT,
-  PeObject_FUNC,
 
-};
 
 typedef struct PeObject {
   int type;
