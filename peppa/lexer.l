@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "peppa/parser.h"
+// #include "peppa/parser.h"
 
 #define YY_USER_INIT
 #define YY_USER_ACTION do { yycolumn += yyleng; } while (0);
@@ -45,25 +45,26 @@ int len = 0;
   ":"       |
   ";"       |
   "~"       |
-  "**"      |
-  "*"       |
-  "/"       |
-  "//"      |
   "%"       |
   "+"       |
   "-"       |
-  "<<"      |
-  ">>"      |
+  "*"       |
+  "/"       |
   "&"       |
   "^"       |
   "|"       |
-  "in"      |
-  "not in"  |
-  "is"      |
-  "is not"  |
   "<"       |
+  ">"       { return yytext[0]; }
+
+  "**"      |
+  "//"      |
+  "<<"      |
+  ">>"      |
+  "not in"  |
+  "in"      |
+  "is not"  |
+  "is"      |
   "<="      |
-  ">"       |
   ">="      |
   "=="      |
   "!="      |
@@ -132,19 +133,11 @@ int len = 0;
     printf("Float literal: %s\n", yytext);
   }
 
-  "#".*$    {
-    /* Comments */
-    printf("[%d: %d] ", yylineno, yycolumn);
-    printf("Comments: %s\n", yytext);
-  }
+  "#".*$  { /* Comments */ }
 
-  [ \t]*  ; /* Whitespace */
+  [ \t\v\f]*  { /* Whitespace */ }
 
-  \\[ \t]*(#.*)?\n   {
-    /* Back-slash */
-    printf("[%d: %d] ", yylineno, yycolumn);
-    printf("Back-slash: %s\n", yytext);
-  }
+  \\[ \t]*(#.*)?\n  { /* Back-slash trailing comments */ }
 
   \n    { /* Newline */ }
 
