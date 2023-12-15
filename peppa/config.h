@@ -64,27 +64,27 @@ static_assert(__cplusplus >= 201103L,
 #endif
 
 // Checks compiler minimum version.
-#if defined(__clang__) && defined(__clang_major__) && defined(__clang_minor__)
+#if defined(__clang__)
 # define PEPPA_MIN_CLANG_VERSION(major, minor) \
   ((__clang_major__ << 16) + __clang_minor__ >= ((major) << 16) + (minor))
 # if !PEPPA_MIN_CLANG_VERSION(3, 3)
 #  error "Peppa require clang version at least 3.2."
 # endif
-#elif defined(__GNUC__) && defined(__GNUC_MINOR__)
+#elif defined(__GNUC__)
 # define PEPPA_MIN_GNUC_VERSION(major, minor) \
   ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((major) << 16) + (minor))
 # if !PEPPA_MIN_GNUC_VERSION(4, 8)
 #  error "Peppa require gcc version at least 4.8."
 # endif
-#else  // !defined(__GNUC__) && !defined(__clang__)
-# error "Peppa requires GCC 4.8+ or clang 3.3+ compiler."
 #endif
 
 // Checks the endianess of the platform.
 #if defined(__BYTE_ORDER__)
-# if defined(__ORDER_LITTLE_ENDIAN__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+# if defined(__ORDER_LITTLE_ENDIAN__) && \
+    __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #  define PEPPA_IS_LITTLE_ENDIAN 1
-# elif defined(__ORDER_BIG_ENDIAN__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+# elif defined(__ORDER_BIG_ENDIAN__) && \
+    __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #  define PEPPA_IS_BIG_ENDIAN 1
 # endif
 #else
@@ -109,10 +109,33 @@ static_assert(__cplusplus >= 201103L,
 #endif
 
 // Checks runtime type identify(RTTI) support.
-#if defined(__GNUC__) && defined(__GXX_RTTI)
+#if defined(__GXX_RTTI) || defined(__cpp_rtti)
 # define PEPPA_HAVE_RTTI 1
 #endif
 
 // Defines the size of the L1 cache for purposes of alignment.
+#ifndef PEPPA_CACHELINE_SIZE
+# define PEPPA_CACHELINE_SIZE 64
+#endif
+
+#if defined(__GNUC__)
+# define PEPPA_CACHELINE_ALIGNED \
+  __attribute__((aligned(PEPPA_CACHELINE_SIZE)))
+#else
+# define PEPPA_CACHELINE_ALIGNED
+#endif
+
+// Provided the compiler with branch prediction information.
+// In general, we will prefer to use actual profile feedback(-fprofile-arcs)
+// for this. however, annotating specific branches that are both hot and
+// consistently mispredicted is like to yield performance improvements.
+#if PEPPA_HAVE_BUILTIN(__builtin_expect) || \
+  (defined(__GNUC__) && !defined(__clang__))
+# define PEPPA_EXPECT_TRUE(x) (__builtin_expect((x), 1))
+# define PEPPA_EXPECT_FALSE(x) (__builtin_expect((x), 0))
+#else
+# define PEPPA_EXPECT_TRUE(x) (x)
+# define PEPPA_EXPECT_FALSE(x) (x)
+#endif
 
 #endif  /* PEPPA_CONFIG_H_ */

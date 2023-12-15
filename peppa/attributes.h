@@ -1,86 +1,43 @@
-/* Copyright 2023 The Peppa Authors. */
+// Copyright 2023 The Peppa Authors.
 
 #ifndef PEPPA_ATTRIBUTES_H_
 #define PEPPA_ATTRIBUTES_H_
 
-/* Pe_HAS_ATTRIBUTE() */
-#if defined(__has_attribute)
-# define Pe_HAS_ATTRIBUTE(x) __has_attribute(x)
+#include "peppa/config.h"
+
+// PEPPA_ALWAYS_INLINE
+#if defined(__GNUC__)
+# define PEPPA_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #else
-# define Pe_HAS_ATTRIBUTE(x) (0)
+# define PEPPA_ALWAYS_INLINE inline
 #endif
 
-/* Pe_HAS_BUILTIN() */
-#if defined(__has_builtin)
-# define Pe_HAS_BUILTIN(x) __has_builtin(x)
+// PEPPA_NORETURN
+#if defined(__GNUC__)
+# define PEPPA_NORETURN __attribute__((noreturn))
 #else
-# define Pe_HAS_BUILTIN(x) 0
+# define PEPPA_NORETURN
 #endif
 
-/* Pe_ALWAYS_INLINE() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_ATTRIBUTE(always_inline)
-# define Pe_ALWAYS_INLINE inline __attribute__((always_inline))
+// PEPPA_DEPRECATED
+#if defined(__GNUC__)
+# define PEPPA_DEPRECATED(msg) __attribute__((deprecated(msg)))
 #else
-# define Pe_ALWAYS_INLINE inline
+# define PEPPA_DEPRECATED(...)
 #endif
 
-/* Pe_NORETURN() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_ATTRIBUTE(noreturn)
-# define Pe_NORETURN __attribute__((noreturn))
+// PEPPA_NODISCARD
+#if defined(__GNUC__)
+# define PEPPA_NODISCARD __attribute__((warn_unused_result))
 #else
-# define Pe_NORETURN
+# define PEPPA_NODISCARD
 #endif
 
-/* Pe_DEPRECATED() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_ATTRIBUTE(deprecated)
-# define Pe_DEPRECATED(...) __attribute__((deprecated(__VA_ARGS__)))
+// PEPPA_ALIGNED
+#if defined(__GNUC__)
+# define PEPPA_ALIGNED(n) __attribute__((aligned(n)))
 #else
-# define Pe_DEPRECATED(...)
-#endif
-
-/* Pe_MAYBE_UNUSED() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_ATTRIBUTE(unused)
-# define Pe_MAYBE_UNUSED __attribute__((unused))
-#else
-# define Pe_MAYBE_UNUSED
-#endif
-
-/* Pe_NODISCARD() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_ATTRIBUTE(warn_unused_result)
-# define Pe_NODISCARD __attribute__((warn_unused_result))
-#else
-# define Pe_NODISCARD
-#endif
-
-/* Pe_ALIGNED() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_ATTRIBUTE(aligned)
-# define Pe_ALIGNED(n) __attribute__((aligned(n)))
-#else
-# define Pe_ALIGNED(n)
-#endif
-
-/* Pe_PACKED() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_ATTRIBUTE(packed)
-# define Pe_PACKED __attribute__((packed))
-#else
-# define Pe_PACKED
-#endif
-
-/* Pe_LIKELY(), Pe_UNLIKELY() */
-#if (defined(__GNUC__) && !defined(__clang__)) || \
-    Pe_HAS_BUILTIN(__builtin_expect)
-# define Pe_LIKELY(x) __builtin_expect(!!(x), 1)
-# define Pe_UNLIKELY(x) __builtin_expect(!!(x), 0)
-#else
-# define Pe_LIKELY(x) (x)
-# define Pe_UNLIKELY(x) (x)
+# define PEPPA_ALIGNED(n)
 #endif
 
 #endif  /* PEPPA_ATTRIBUTES_H_ */
