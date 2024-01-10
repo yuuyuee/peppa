@@ -80,7 +80,7 @@ static_assert(__cplusplus >= 201103L,
 #endif
 
 // Checks platform feature.
-#if !(defined(__linux__))
+#if !defined(__linux__)
 # error "Peppa requires linux operator system."
 #endif
 
@@ -198,4 +198,4 @@ static_assert(__cplusplus >= 201103L,
 # define PP_CACHELINE_ALIGNED
 #endif
 
-#endif  /* PEPPA_CONFIG_H_ */
+#endif  // PEPPA_CONFIG_H_

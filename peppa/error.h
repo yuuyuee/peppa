@@ -1,38 +1,31 @@
-/* Copyright 2023 The Peppa Authors. */
+// Copyright 2023 The Peppa Authors.
 
 #ifndef PEPPA_ERROR_H_
 #define PEPPA_ERROR_H_
 
-#include <stddef.h>
-#include <stdlib.h>
+#include <cstddef>
+#include <cassert>
 
-#include "peppa/attributes.h"
+#include "peppa/config.h"
 
-#define _Pe_MKERRNUM(a, b, c, d)  \
+#define PP_MKERRNUM_IMPL(a, b, c, d)  \
   (((unsigned)(a) << 24) | ((b) << 16) | ((c) << 8) | (d))
 
-# define Pe_MKERRNUM(a, b, c, d) _Pe_MKERRNUM(a, b, c, d)
+# define PP_MKERRNUM(a, b, c, d) PP_MKERRNUM_IMPL(a, b, c, d)
 
-#define PeErr_SYNTAX_ERROR Pe_MKERRNUM(0, 'S', 'Y', 'E')
+#define PP_SYNTAX_ERROR Pe_MKERRNUM(0, 'S', 'Y', 'E')
 
-/* Put a description of the errnum in "buf". */
-const char* Pe_strError(int errnum, char* buf, size_t size);
+namespace peppa {
+PP_NAMESPACE_BEGIN
 
-#ifndef NDEBUG
-# define PE_CHECK(cond, fmt, ...) do {                                  \
-  if (Pe_UNLIKELY(!(cond))) {                                           \
-    _Pe_error(__FILE__, __LINE__, __func__, fmt "\n", ## __VA_ARGS__);  \
-    abort();                                                            \
-  }                                                                     \
-} while (0)
+// Put a description of the errnum in "buf".
+const char* StrError(int errnum, char* buf, size_t size);
 
-# define PE_CHECK2(cond) PE_CHECK(cond, #cond)
+PP_NAMESPACE_END
+}  // namespace peppa
 
-void _Pe_error(const char* file, int line, const char* fun,
-               const char* fmt, ...);
-#else
-# define PE_CHECK(cond, fmt, ...)
-# define PE_CHECK2(cond)
-#endif
+#define PP_ASSERT(cond)     \
+  (PP_EXPECT_FALSE(cond) ?  \
+    static_cast<void>(0) : [] { assert(false && PP_STRINGFY(cond)); }())
 
-#endif  /* PEPPA_ERROR_H_ */
+#endif  // PEPPA_ERROR_H_

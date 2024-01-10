@@ -1,43 +1,56 @@
-/* Copyright 2023 The Peppa Authors. */
+// Copyright 2023 The Peppa Authors.
 
 #ifndef PEPPA_HASH_H_
 #define PEPPA_HASH_H_
 
-#include <stddef.h>
+#include <cstddef>
 #include <stdint.h>
 
-#include "peppa/attributes.h"
+#include "peppa/config.h"
 
-typedef struct  {
-  uint32_t h1;
-#define Pe_STATE_SIZE 4
-  uint8_t state[Pe_STATE_SIZE];
-  int pos;
-  uint64_t len;
-} Pe_HashContext;
+namespace peppa {
+PP_NAMESPACE_BEGIN
 
-/* Allocate an hash context. */
-Pe_HashContext* PeHashContext_alloc() Pe_NODISCARD;
+class HashContext {
+ public:
+  // Construct an 128-bits hash context.
+  HashContext();
 
-/* Initialize or reinitialize an hash context. */
-void PeHashContext_init(Pe_HashContext* context);
+  // Construct an 32-bits hash context with a seed.
+  HashContext(unsigned seed);
 
-/* Initialize or reinitialize an hash context with a seed. */
-void PeHashContext_init2(Pe_HashContext* context, uint32_t seed);
+  // Reset the state to start hashing the value of the new stream.
+  void Reset();
 
-/* Update hash context with new data. */
-void PeHashContext_update(Pe_HashContext* context,
-                          const void* data, size_t len);
+  // Update hash context with new data.
+  void Update(const void* data, size_t len);
 
-/* Finish hashing and returns hash value. */
-uint32_t PeHashContext_finish(Pe_HashContext* context);
+  // Finish hashing and returns a 128-bits hash value.
+  void Finish(uint64_t out[2]);
 
-/* Free an hash context. */
-void PeHashContext_free(Pe_HashContext* context);
+ private:
+  void UpdateOnce(uint64_t k0, uint64_t k1);
 
-/* Wrapped functions */
+ private:
+  uint64_t h0_;
+  uint64_t h1_;
+  uint8_t state_[16];
+  unsigned state_len_;
+  unsigned seed_;
+  uint64_t len_;
+};
 
-uint32_t Pe_getHashValue(const void* data, size_t len);
-uint32_t Pe_getHashValue2(const void* data, size_t len, uint32_t seed);
+// Wrapped functions
+void Hash(const void* data, size_t len, uint32_t* value);
+void Hash(const void* data, size_t len, uint32_t* value, unsigned seed);
+void Hash(const void* data, size_t len, uint64_t* value);
+void Hash(const void* data, size_t len, uint64_t* value, unsigned seed);
+void Hash(const void* data, size_t len, uint64_t value[2]);
+void Hash(const void* data, size_t len, uint64_t value[2], unsigned seed);
+#ifdef __SIZEOF_INT128__
 
-#endif  /* PEPPA_HASH_H_ */
+#endif
+
+PP_NAMESPACE_END
+}  // namespace peppa
+#endif  // PEPPA_HASH_H_

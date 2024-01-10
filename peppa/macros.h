@@ -1,22 +1,9 @@
-/* Copyright 2023 The Peppa Authors. */
+// Copyright 2023 The Peppa Authors.
 
 #ifndef PEPPA_MACROS_H_
 #define PEPPA_MACROS_H_
 
-#include <stddef.h>
-
 #include "peppa/config.h"
-
-#define PP_MAX(a, b) ((a) > (b) ? (a) : (b))
-#define PP_MAX3(a, b, c) PP_MAX(PP_MAX(a, b), c)
-#define PP_MIN(a, b) ((a) < (b) ? (a) : (b))
-#define PP_MIN3(a, b, c) PP_MIN(PP_MIN(a, b), c)
-
-#define PP_SWAP(type, a, b) do {  \
-  type tmp = (b);                 \
-  (b) = (a);                      \
-  (a) = tmp;                      \
-} while (0)
 
 #ifndef PP_STRINGFY
 # define PP_STRINGFY_IMPL(s) #s
@@ -39,8 +26,9 @@
 #define PP_CONTAINER_OF(ptr, type, member) \
   ((type *) (((char *) ptr) - PP_OFFSETOF(type, member)))
 
-#ifdef __cplusplus
 namespace peppa {
+PP_NAMESPACE_BEGIN
+
 namespace macros_internal {
 template <typename T, size_t N, typename R = char (&)[N]>
 R ArraySizeHelper(const T (&)[N]);
@@ -50,16 +38,16 @@ PP_ALWAYS_INLINE constexpr void IgnoreUnused(Args const& ...) {}
 
 template <typename... Args>
 PP_ALWAYS_INLINE constexpr void IgnoreUnused() {}
+
 }  // namespace macros_internal
+PP_NAMESPACE_END
 }  // namespace peppa
 
-# define PP_ARRAYSIZE(a) sizeof(::peppa::macros_internal::ArraySizeHelper(a))
-# define PP_IGNORE_UNUSED(...) ::peppa::macros_internal::IgnoreUnused(##__VA_ARGS__)
-# define OAK_DISALLOW_COPY_AND_ASSIGN(type)      \
-    type(type const&) = delete;                 \
-    type& operator=(type const&) = delete
-#else
-# define PP_ARRAYSIZE(a) (sizeof(a) / sizeof(*(a)))
-#endif
+#define PP_ARRAYSIZE(a) sizeof(::peppa::macros_internal::ArraySizeHelper(a))
+#define PP_IGNORE_UNUSED(...) ::peppa::macros_internal::IgnoreUnused(##__VA_ARGS__)
 
-#endif  /* PEPPA_MACROS_H_ */
+#define OAK_DISALLOW_COPY_AND_ASSIGN(type)    \
+  type(type const&) = delete;                 \
+  type& operator=(type const&) = delete
+
+#endif  // PEPPA_MACROS_H_
