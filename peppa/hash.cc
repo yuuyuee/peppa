@@ -4,9 +4,9 @@
 
 #include <string.h>
 
-#include "peppa/codec.h"
 #include "peppa/macros.h"
 #include "peppa/error.h"
+#include "peppa/unaligned_access.h"
 
 namespace peppa {
 PP_NAMESPACE_BEGIN
@@ -40,7 +40,7 @@ void HashContext::UpdateOnce(uint64_t k0, uint64_t k1) {
   h0_ ^= k0;
   h0_ = ROTL64(h0_, 27);
   h0_ += h1_;
-  h0_ *= UINT32_C(0x52dce729);
+  h0_ = h0_ * 5 + UINT32_C(0x52dce729);
 
   k1 *= C1;
   k1 = ROTL64(k1, 33);
@@ -49,7 +49,7 @@ void HashContext::UpdateOnce(uint64_t k0, uint64_t k1) {
   h1_ ^= k1;
   h1_ = ROTL64(h1_, 31);
   h1_ += h0_;
-  h1_ *= UINT32_C(0x38495ab5);
+  h1_ = h1_ * 5 + UINT32_C(0x38495ab5);
 }
 
 void HashContext::Update(const void* data, size_t len) {
@@ -64,16 +64,16 @@ void HashContext::Update(const void* data, size_t len) {
         return;
     }
 
-    uint64_t k0 = Decode<uint64_t>(state_);
-    uint64_t k1 = Decode<uint64_t>(state_ + 8);
+    uint64_t k0 = UnalignedLoad64(state_);
+    uint64_t k1 = UnalignedLoad64(state_ + 8);
     UpdateOnce(k0, k1);
     state_len_ = 0;
   }
 
   int num_block = len / sizeof(state_);
   for (int i = 0; i < num_block; ++i) {
-    uint64_t k0 = Decode<uint64_t>(ptr);
-    uint64_t k1 = Decode<uint64_t>(ptr + sizeof(state_) / 2);
+    uint64_t k0 = UnalignedLoad64(ptr);
+    uint64_t k1 = UnalignedLoad64(ptr + sizeof(state_) / 2);
     UpdateOnce(k0, k1);
     ptr += sizeof(state_);
     len -= sizeof(state_);

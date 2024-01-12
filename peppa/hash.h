@@ -17,7 +17,12 @@ class HashContext {
   HashContext();
 
   // Construct an 32-bits hash context with a seed.
-  HashContext(unsigned seed);
+  explicit HashContext(unsigned seed);
+
+  HashContext(HashContext const&) = delete;
+  HashContext& operator=(HashContext const&) = delete;
+  HashContext(HashContext&&) = delete;
+  HashContext& operator=(HashContext&&) = delete;
 
   // Reset the state to start hashing the value of the new stream.
   void Reset();
@@ -29,6 +34,7 @@ class HashContext {
   void Finish(uint64_t out[2]);
 
  private:
+
   void UpdateOnce(uint64_t k0, uint64_t k1);
 
  private:
@@ -40,6 +46,8 @@ class HashContext {
   uint64_t len_;
 };
 
+uint32_t Hash128ToHash32();
+
 // Wrapped functions
 void Hash(const void* data, size_t len, uint32_t* value);
 void Hash(const void* data, size_t len, uint32_t* value, unsigned seed);
@@ -47,9 +55,6 @@ void Hash(const void* data, size_t len, uint64_t* value);
 void Hash(const void* data, size_t len, uint64_t* value, unsigned seed);
 void Hash(const void* data, size_t len, uint64_t value[2]);
 void Hash(const void* data, size_t len, uint64_t value[2], unsigned seed);
-#ifdef __SIZEOF_INT128__
-
-#endif
 
 PP_NAMESPACE_END
 }  // namespace peppa
