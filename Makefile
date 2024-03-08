@@ -7,7 +7,7 @@ LDFLAGS = -lpthread
 
 GTEST_CORE = $(CURDIR)/third_party/gtest/gmock-gtest-all.cc
 GTEST_MAIN = $(CURDIR)/third_party/gtest/gtest_main.cc
-TARGET = list_test hash_table_test
+TARGET = list_test hash_table_test lvm
 
 all: $(TARGET);
 
@@ -26,7 +26,10 @@ list_test: peppa/list_test.cc $(GTEST_CORE) $(GTEST_MAIN)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 hash_table_test: peppa/hash_table.c peppa/hash.c peppa/error.c peppa/alloc.c peppa/format.c
-	gcc -DPE_HASHTABLE_TEST $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lm
+	gcc -DPE_HASHTABLE_TEST $(CPPFLAGS) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lm -ldl
+
+lvm: lvm.cc
+	g++ $(CPPFLAGS) $(CXXFLAGS) -o $@ $< /usr/local/lib/libluajit-5.1.a $(LDFLAGS) -lm
 
 clean:
 	rm -rf peppa/lexer.c peppa/lexer.h \
