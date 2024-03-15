@@ -253,36 +253,84 @@ static int ProtectTableSet(lua_State *state) {
   return 0;
 }
 
+static void EnableTableReadOnly(lua_State* state) {
+  // new_table = {}
+  // metatable.__index = table
+  // metatable.__newindex = ProtectTableSet
+  // setmetatable(new_table, metatable)
+  // table = new_table
+
+  int top = lua_gettop(state);
+  assert(top >= 1 && lua_istable(state, -1)); // origin value
+
+  lua_newtable(state);            // new value
+  lua_newtable(state);            // metatable
+  lua_pushvalue(state, -3);       // origin value
+  lua_setfield(state, -2, "__index");
+  lua_pushcfunction(state, ProtectTableSet);
+  lua_setfield(state, -2, "__newindex");
+  lua_setmetatable(state, -2);    // set metatable for new value
+  lua_replace(state, -2);         // replace origin value
+
+  assert(top == lua_gettop(state));
+}
+
+static void DisableTableReadOnly(lua_State* state) {
+  int top = lua_gettop(state);
+  assert(top >= 1 && lua_istable(state, -1)); // origin value
+
+  if (lua_getmetatable(state, -1)) {    // metatable
+    lua_getfield(state, -1, "__index"); // __index
+    assert(lua_istable(state, -1));
+    lua_pushnil(state);
+    lua_setmetatable(state, -4);
+    lua_replace(state, -3);
+    lua_pop(state, 1);
+  }
+
+  assert(top == lua_gettop(state));
+}
+
 static void ProtectedTableErrorTest(lua_State *state) {
   lua_pop(state, lua_gettop(state));
 
   lua_newtable(state);
-  lua_newtable(state);
+  lua_pushstring(state, "value1");
+  lua_setfield(state, -2, "key1");
+  lua_pushstring(state, "value2");
+  lua_setfield(state, -2, "key2");
 
-#if 1
-  lua_pushstring(state, "value");
-  lua_setfield(state, -3, "key");
-#endif
+  EnableTableReadOnly(state);
+  lua_setglobal(state, "rot");
 
-  lua_pushcfunction(state, ProtectTableSet);
-  lua_setfield(state, -2, "__newindex");
-
-  lua_setmetatable(state, -2);
-  lua_setglobal(state, "ttt");
-
-#define __L(...) __VA_ARGS__ "\n"
-
-  const char* code =          \
-    __L("print('ttt.key = ' .. ttt.key)") \
-    __L("ttt.key = 123456")   \
-    __L("print('ttt.key = ' .. ttt.key)");
-
-  if (luaL_dostring(state, code)) {
+  const char* c1 =
+      "print(rot.key1)\n"
+      "print(rot.key2)\n"
+      "print(rot.key3)\n"
+      "rot.key2 = '123'\n"
+      "rot.key3 = '123'\n";
+  if (luaL_loadbuffer(state, c1, strlen(c1), "C1") || \
+      lua_pcall(state, 0, LUA_MULTRET, 0)) {
     const char* msg = lua_tostring(state, -1);
     std::cout << "Error: " << msg << std::endl;
   }
 
-  lua_pop(state, lua_gettop(state));
+  lua_getglobal(state, "rot");
+  DisableTableReadOnly(state);
+  lua_getglobal(state, "rot");
+
+  const char* c2 =
+      "print(rot.key1)\n"
+      "print(rot.key2)\n"
+      "print(rot.key3)\n"
+      "rot.key2 = '123'\n"
+      "rot.key3 = '123'\n"
+      "print(rot.key3)\n";
+  if (luaL_loadbuffer(state, c2, strlen(c2), "C2") || \
+      lua_pcall(state, 0, LUA_MULTRET, 0)) {
+    const char* msg = lua_tostring(state, -1);
+    std::cout << "Error: " << msg << std::endl;
+  }
 }
 
 // static int Addition(lua_State* state) {
@@ -363,7 +411,7 @@ int main(int argc, char* argv[]) {
   //   std::cout << "Error: " << msg << std::endl;
   // }
 
-  // ProtectedTableErrorTest(state);
+  ProtectedTableErrorTest(state);
 
   std::cout << "lvm memory usage: " << lua_gc(state, LUA_GCCOUNT, 0) << std::endl;
 
