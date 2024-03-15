@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <chrono>
 
 // #include <luajit-2.1/lua.hpp>
 extern "C" {
@@ -236,6 +237,59 @@ static void PrintTable(lua_State* state, int idx,
   }
 }
 
+static int ProtectTableSet(lua_State *state) {
+  int argc = lua_gettop(state);
+  if (argc != 3)
+    luaL_error(state, "Wrong number of arguments: %d\n", argc);
+  if (!lua_istable(state, -3))
+     luaL_error(state, "First argument must be a table");
+  if (!lua_isstring(state, -2) && !lua_isnumber(state, -2))
+    luaL_error(state, "Second argument must be a string or number");
+  const char *key = lua_tostring(state, -2);
+  const char *value = lua_tostring(state, -1);
+  luaL_error(state,
+      "Attempted to set readonly table on the index '%s' with values '%s'",
+      key, value);
+  return 0;
+}
+
+static void ProtectedTableErrorTest(lua_State *state) {
+  lua_pop(state, lua_gettop(state));
+
+  lua_newtable(state);
+  lua_newtable(state);
+
+#if 1
+  lua_pushstring(state, "value");
+  lua_setfield(state, -3, "key");
+#endif
+
+  lua_pushcfunction(state, ProtectTableSet);
+  lua_setfield(state, -2, "__newindex");
+
+  lua_setmetatable(state, -2);
+  lua_setglobal(state, "ttt");
+
+#define __L(...) __VA_ARGS__ "\n"
+
+  const char* code =          \
+    __L("print('ttt.key = ' .. ttt.key)") \
+    __L("ttt.key = 123456")   \
+    __L("print('ttt.key = ' .. ttt.key)");
+
+  if (luaL_dostring(state, code)) {
+    const char* msg = lua_tostring(state, -1);
+    std::cout << "Error: " << msg << std::endl;
+  }
+
+  lua_pop(state, lua_gettop(state));
+}
+
+// static int Addition(lua_State* state) {
+//   luaL_error(state, "an error from C function");
+//   return 0;
+// }
+
 int main(int argc, char* argv[]) {
   LUAJIT_VERSION_SYM();
 
@@ -252,6 +306,9 @@ int main(int argc, char* argv[]) {
 
   // Load the standard libraries
   luaL_openlibs(state);
+
+  int ret = luaJIT_setmode(state, 0, LUAJIT_MODE_ON | LUAJIT_MODE_FLUSH);
+  assert(ret == 1);
 
   // Initialize the runtime environ
   InitRuntimeEnv(state);
@@ -284,23 +341,31 @@ int main(int argc, char* argv[]) {
     std::cout << "Error: " << msg << std::endl;
     goto error;
   }
-  assert(lua_gettop(state) == 2);
-  lua_pop(state, 2);
+
+  // assert(lua_gettop(state) == 2);
+  // lua_pop(state, 2);
 
   // Print results
-  PrintDataItem(state);
-  PRINT_STACK_TOP();
+  // PrintDataItem(state);
+  // PRINT_STACK_TOP();
 
   // std::cout << "==== LUA_REGISTRYINDEX ====" << std::endl;
   // PrintTable(state, LUA_REGISTRYINDEX);
   // PRINT_STACK_TOP();
 
-  // PrintTable(state, LUA_ENVIRONINDEX);
-  // PRINT_STACK_TOP();
-
   // std::cout << "==== LUA_GLOBALSINDEX ====" << std::endl;
   // PrintTable(state, LUA_GLOBALSINDEX);
   // PRINT_STACK_TOP();
+
+  // lua_pushcfunction(state, Addition);
+  // if (lua_pcall(state, 0, 0, 0) != LUA_OK) {
+  //   const char* msg = lua_tostring(state, -1);
+  //   std::cout << "Error: " << msg << std::endl;
+  // }
+
+  // ProtectedTableErrorTest(state);
+
+  std::cout << "lvm memory usage: " << lua_gc(state, LUA_GCCOUNT, 0) << std::endl;
 
 error:
   lua_close(state);
