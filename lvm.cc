@@ -280,10 +280,10 @@ static void DisableTableReadOnly(lua_State* state) {
   assert(top >= 1 && lua_istable(state, -1)); // origin value
 
   if (lua_getmetatable(state, -1)) {    // metatable
-    lua_getfield(state, -1, "__index"); // __index
+    lua_pushstring(state, "__index");   // __index
+    lua_rawget(state, -2);
     assert(lua_istable(state, -1));
-    lua_pushnil(state);
-    lua_setmetatable(state, -4);
+
     lua_replace(state, -3);
     lua_pop(state, 1);
   }
@@ -317,7 +317,7 @@ static void ProtectedTableErrorTest(lua_State *state) {
 
   lua_getglobal(state, "rot");
   DisableTableReadOnly(state);
-  lua_getglobal(state, "rot");
+  lua_setglobal(state, "rot");
 
   const char* c2 =
       "print(rot.key1)\n"
